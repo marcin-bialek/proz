@@ -1,5 +1,6 @@
-package pl.edu.pw.stud.bialek2.marcin.proz;
+package pl.edu.pw.stud.bialek2.marcin.proz.Views;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.*;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.event.MouseListener;

@@ -1,15 +1,13 @@
-package pl.edu.pw.stud.bialek2.marcin.proz;
+package pl.edu.pw.stud.bialek2.marcin.proz.Views;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.*;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
-
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneLayout;
-
 import java.awt.Container;
 
 

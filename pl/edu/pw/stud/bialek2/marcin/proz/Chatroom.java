@@ -1,7 +1,5 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
-import java.time.LocalDateTime;
-
 
 public class Chatroom {
     private String name;
@@ -15,9 +13,18 @@ public class Chatroom {
     }
 
     public Message getLastMessage() {
-        return new Message(
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed iaculis metus risus, at sodales tortor elementum eu. Nunc posuere aliquam vestibulum. Suspendisse sed euismod massa.", 
-            LocalDateTime.of(2020, 5, 17, 12, 31)
-        );
+        return FAKE_MESSAGES[FAKE_MESSAGES.length - 1];
     }
+
+    public static final Message[] FAKE_MESSAGES = {
+        new Message("Nostrud exercitation est elit deserunt minim reprehenderit fugiat do labore elit.", false),
+        new Message("Nisi ipsum proident do ex amet pariatur nulla in cupidatat laboris.", false),
+        new Message("no siemaQuis anim amet ullamco esse exercitation reprehenderit consequat veniam est ipsum.", true),
+        new Message("Nulla ut sunt sit culpa incididunt. Duis eiusmod quis sint consectetur occaecat tempor quis ea ea. Non velit adipisicing sunt amet qui magna eiusmod eu do anim cillum elit adipisicing esse. Elit labore eu dolore elit magna esse cillum qui. Velit in id adipisicing anim duis enim mollit veniam elit non excepteur dolor esse aliquip. Ea consequat laboris sit laborum. Aute est aliqua minim ipsum cillum duis eiusmod culpa dolor nisi sint.", false),
+        new Message("Deserunt exercitation tempor nisi reprehenderit est minim sunt Lorem quis anim adipisicing magna.", true),
+        new Message("Adipisicing exercitation mollit consequat velit.", true),
+        new Message("Amet aliqua reprehenderit nulla sint.", false),
+        new Message("Cillum magna dolor in officia commodo enim culpa laborum anim ad.", false),
+        new Message("Commodo proident occaecat voluptate nulla esse ad aute quis Lorem esse sunt do. Velit veniam esse aliqua aute magna amet mollit exercitation cupidatat cupidatat. Culpa irure aliqua adipisicing aute reprehenderit.", true),
+    };
 }

@@ -1,5 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.Views.*;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
