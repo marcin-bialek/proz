@@ -1,5 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
+
 import java.awt.Color;
 import javax.swing.SwingUtilities;
 

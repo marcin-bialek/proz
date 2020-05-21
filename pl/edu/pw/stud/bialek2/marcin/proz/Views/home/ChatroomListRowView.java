@@ -1,6 +1,8 @@
-package pl.edu.pw.stud.bialek2.marcin.proz.Views;
+package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 
-import pl.edu.pw.stud.bialek2.marcin.proz.*;
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
+
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.event.MouseListener;
@@ -15,6 +17,7 @@ import javax.swing.JPanel;
 
 
 public class ChatroomListRowView extends JPanel implements MouseListener {
+    private static final long serialVersionUID = -1830652066555568399L;
     private Chatroom chatroom;
     private JPanel content  = new JPanel();
 
@@ -83,20 +86,26 @@ public class ChatroomListRowView extends JPanel implements MouseListener {
         this.add(this.content, BorderLayout.CENTER);
     }
 
+    @Override
     public void mouseEntered(MouseEvent event) {
         this.setBackground(App.PRIMARY_COLOR);
         this.revalidate();
     }
 
+    @Override
     public void mouseExited(MouseEvent event) {
         this.setBackground(App.BACKGROUND_COLOR);
         this.revalidate();
     }
 
+    @Override
     public void mouseClicked(MouseEvent event) {
         // System.out.println("mouse clicked");
     }
 
+    @Override
     public void mousePressed(MouseEvent event) {}
+
+    @Override
     public void mouseReleased(MouseEvent event) {}  
 }

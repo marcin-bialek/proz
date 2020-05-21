@@ -1,4 +1,6 @@
-package pl.edu.pw.stud.bialek2.marcin.proz.Views;
+package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
+
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -8,6 +10,8 @@ import javax.swing.JTextArea;
 
 
 public class MessageInputView extends JPanel {
+    private static final long serialVersionUID = -4781248477369393733L;
+
     public MessageInputView() {
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         this.setLayout(new BorderLayout());

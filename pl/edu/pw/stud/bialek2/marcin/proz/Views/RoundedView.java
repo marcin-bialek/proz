@@ -1,4 +1,4 @@
-package pl.edu.pw.stud.bialek2.marcin.proz.Views;
+package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 
 
 public class RoundedView extends JPanel {
+    private static final long serialVersionUID = -3639064706728525554L;
     private JPanel content = new JPanel();
     private JPanel safeArea = new JPanel();
     private int cornerRadius;
