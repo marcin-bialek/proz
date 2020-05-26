@@ -57,6 +57,21 @@ public class SecurityService {
         return null;
     }
 
+    public static PublicKey generatePublicKey(final byte[] raw) {
+        try {
+            final KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_CIPHER_ALGORITHM);
+            return keyFactory.generatePublic(new X509EncodedKeySpec(raw));
+        } 
+        catch(InvalidKeySpecException e) {
+            e.printStackTrace();
+        }
+        catch(NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static KeyPair generateKeyPair() {
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -93,7 +108,7 @@ public class SecurityService {
         return generateSecretKey(hashSHA256(password));
     }
 
-    private static byte[] symmetricCrypto(final byte[] input, final SecretKey key, final int mode) {
+    private static byte[] symmetricCrypto(final byte[] input, final SecretKey key, final int mode) throws WrongPasswordException {
         try {
             final Cipher cipher = Cipher.getInstance(SYMMETRIC_CIPHER_TRANSFORMATION);
             cipher.init(mode, key);
@@ -105,24 +120,18 @@ public class SecurityService {
         catch(NoSuchPaddingException e) {
             e.printStackTrace();
         }
-        catch(InvalidKeyException e) {
-            e.printStackTrace();
-        }
-        catch(IllegalBlockSizeException e) {
-            e.printStackTrace();
-        }
-        catch(BadPaddingException e) {
-            e.printStackTrace();
+        catch(InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+            throw new WrongPasswordException();
         }
 
         return null;
     }
 
-    public static byte[] symmetricEncrypt(final byte[] input, final SecretKey key) {
+    public static byte[] symmetricEncrypt(final byte[] input, final SecretKey key) throws WrongPasswordException {
         return symmetricCrypto(input, key, Cipher.ENCRYPT_MODE);
     }
 
-    public static byte[] symmetricDecrypt(final byte[] input, final SecretKey key) {
+    public static byte[] symmetricDecrypt(final byte[] input, final SecretKey key) throws WrongPasswordException {
         return symmetricCrypto(input, key, Cipher.DECRYPT_MODE);
     }
 

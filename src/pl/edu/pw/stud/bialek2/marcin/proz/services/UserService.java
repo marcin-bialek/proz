@@ -8,7 +8,6 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.prefs.Preferences;
-
 import javax.crypto.SecretKey;
 
 
@@ -24,7 +23,6 @@ public class UserService {
     private UserServiceListener listener;
     private Preferences preferences;
     private User user;
-    private SecretKey secretKey;
 
     public UserService(UserServiceListener listener) {
         this.listener = listener;
@@ -33,14 +31,14 @@ public class UserService {
     }
 
     public void createUser(final String nick, final int port, final char[] password) {
+        final SecretKey secretKey = SecurityService.generateSecretKey(password);
         final KeyPair keyPair = SecurityService.generateKeyPair();
         final PrivateKey privateKey = keyPair.getPrivate();
         final PublicKey publicKey = keyPair.getPublic();
         final Dimension windowSize = new Dimension(App.DEFAULT_WINDOW_WIDTH, App.DEFAULT_WINDOW_HEIGHT);
 
-        this.user = new User(privateKey, publicKey, nick, port, windowSize);
-        this.secretKey = SecurityService.generateSecretKey(password);
-        this.saveUser(this.secretKey);
+        this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
+        this.saveUser();
         this.listener.userServiceDidCreateUser(this.user);
     }
 
@@ -65,34 +63,44 @@ public class UserService {
             secretKey = SecurityService.generateSecretKey(secretKeyRaw);
         }
 
-        final String nick = this.getSecureString(NICK_KEY, null, secretKey);
-        final int port = this.getSecureInt(PORT_KEY, App.DEFAULT_PORT, secretKey);
-        final int windowWidth = this.getSecureInt(WINDOW_WIDTH_KEY, App.DEFAULT_WINDOW_WIDTH, secretKey);
-        final int windowHeight = this.getSecureInt(WINDOW_HEIGHT_KEY, App.DEFAULT_WINDOW_HEIGHT, secretKey);
-        final Dimension windowSize = new Dimension(windowWidth, windowHeight);
-        final byte[] privateKeyRaw = this.getSecureByteArray(PRIVATE_KEY_KEY, null, secretKey);
-        final byte[] publicKeyRaw = this.getSecureByteArray(PUBLIC_KEY_KEY, null, secretKey);
+        try {
+            final String nick = this.getSecureString(NICK_KEY, null, secretKey);
+            final int port = this.getSecureInt(PORT_KEY, App.DEFAULT_PORT, secretKey);
+            final int windowWidth = this.getSecureInt(WINDOW_WIDTH_KEY, App.DEFAULT_WINDOW_WIDTH, secretKey);
+            final int windowHeight = this.getSecureInt(WINDOW_HEIGHT_KEY, App.DEFAULT_WINDOW_HEIGHT, secretKey);
+            final Dimension windowSize = new Dimension(windowWidth, windowHeight);
+            final byte[] privateKeyRaw = this.getSecureByteArray(PRIVATE_KEY_KEY, null, secretKey);
+            final byte[] publicKeyRaw = this.getSecureByteArray(PUBLIC_KEY_KEY, null, secretKey);
 
-        if(nick == null || privateKeyRaw == null || publicKeyRaw == null) {
-            this.listener.userServiceNeedsUser();
-            return;
+            if(nick == null || privateKeyRaw == null || publicKeyRaw == null) {
+                this.listener.userServiceNeedsUser();
+                return;
+            }
+
+            final KeyPair keyPair = SecurityService.generateKeyPair(privateKeyRaw, publicKeyRaw);
+            final PrivateKey privateKey = keyPair.getPrivate();
+            final PublicKey publicKey = keyPair.getPublic();
+            this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
+            this.listener.userServiceDidLoadUser(this.user);
         }
-
-        final KeyPair keyPair = SecurityService.generateKeyPair(privateKeyRaw, publicKeyRaw);
-        final PrivateKey privateKey = keyPair.getPrivate();
-        final PublicKey publicKey = keyPair.getPublic();
-        this.user = new User(privateKey, publicKey, nick, port, windowSize);
-        this.secretKey = secretKey;
-        this.listener.userServiceDidLoadUser(this.user);
+        catch(WrongPasswordException e) {
+            this.listener.userServiceWrongPassword();
+        }
     }
 
-    private void saveUser(final SecretKey secretKey) {
-        this.putSecureString(NICK_KEY, this.user.getNick(), secretKey);
-        this.putSecureInt(PORT_KEY, this.user.getPort(), secretKey);
-        this.putSecureInt(WINDOW_WIDTH_KEY, this.user.getWindowSize().width, secretKey);
-        this.putSecureInt(WINDOW_HEIGHT_KEY, this.user.getWindowSize().height, secretKey);
-        this.putSecureByteArray(PRIVATE_KEY_KEY, this.user.getPrivateKey().getEncoded(), secretKey);
-        this.putSecureByteArray(PUBLIC_KEY_KEY, this.user.getPublicLKey().getEncoded(), secretKey);
+    public void saveUser() {
+        try {
+            final SecretKey secretKey = this.user.getSecretKey();
+            this.putSecureString(NICK_KEY, this.user.getNick(), secretKey);
+            this.putSecureInt(PORT_KEY, this.user.getPort(), secretKey);
+            this.putSecureInt(WINDOW_WIDTH_KEY, this.user.getWindowSize().width, secretKey);
+            this.putSecureInt(WINDOW_HEIGHT_KEY, this.user.getWindowSize().height, secretKey);
+            this.putSecureByteArray(PRIVATE_KEY_KEY, this.user.getPrivateKey().getEncoded(), secretKey);
+            this.putSecureByteArray(PUBLIC_KEY_KEY, this.user.getPublicLKey().getEncoded(), secretKey);
+        }
+        catch(WrongPasswordException e) {
+            this.listener.userServiceWrongPassword();
+        }
     }
 
     public User getUser() {
@@ -105,30 +113,30 @@ public class UserService {
         return nick.length() == t.length() && c >= 8;
     }
 
-    private void putSecureString(String key, String value, SecretKey secretKey) {
+    private void putSecureString(String key, String value, SecretKey secretKey) throws WrongPasswordException {
         final byte[] encoded = SecurityService.encodeString(value);
         final byte[] encrypted = SecurityService.symmetricEncrypt(encoded, secretKey);
         this.preferences.putByteArray(key, encrypted);
     }
 
-    private String getSecureString(String key, String defaultValue, SecretKey secretKey) {
+    private String getSecureString(String key, String defaultValue, SecretKey secretKey) throws WrongPasswordException {
         final byte[] value = this.preferences.getByteArray(key, null);
 
         if(value == null) {
             return defaultValue;
         }
 
-        final byte[] decrypted = SecurityService.symmetricDecrypt(value, secretKey);
+        byte[] decrypted = SecurityService.symmetricDecrypt(value, secretKey);
         return SecurityService.decodeString(decrypted);
     }
 
-    private void putSecureInt(String key, int value, SecretKey secretKey) {
+    private void putSecureInt(String key, int value, SecretKey secretKey) throws WrongPasswordException {
         final byte[] encoded = SecurityService.encodeInt(value);
         final byte[] encrypted = SecurityService.symmetricEncrypt(encoded, secretKey);
         this.preferences.putByteArray(key, encrypted);
     }
 
-    private int getSecureInt(String key, int defaultValue, SecretKey secretKey) {
+    private int getSecureInt(String key, int defaultValue, SecretKey secretKey) throws WrongPasswordException {
         final byte[] value = this.preferences.getByteArray(key, null);
 
         if(value == null) {
@@ -139,12 +147,12 @@ public class UserService {
         return SecurityService.decodeInt(decrypted);
     }
 
-    private void putSecureByteArray(String key, byte[] value, SecretKey secretKey) {
+    private void putSecureByteArray(String key, byte[] value, SecretKey secretKey) throws WrongPasswordException {
         final byte[] encrypted = SecurityService.symmetricEncrypt(value, secretKey);
         this.preferences.putByteArray(key, encrypted);
     }
 
-    private byte[] getSecureByteArray(String key, byte[] defaultValue, SecretKey secretKey) {
+    private byte[] getSecureByteArray(String key, byte[] defaultValue, SecretKey secretKey) throws WrongPasswordException {
         final byte[] value = this.preferences.getByteArray(key, null);
 
         if(value == null) {

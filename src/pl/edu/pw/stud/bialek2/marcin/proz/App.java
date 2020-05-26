@@ -1,24 +1,32 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindowListener;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.SwingUtilities;
 
 
-public final class App implements UserServiceListener, SecurityServiceStaticListener {
+public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, HomeWindowListener {
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
     public static final Color SECONDARY_COLOR = new Color(77, 100, 141);
@@ -30,14 +38,29 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
     private final SecurityService securityService;
     private final UserService userService; 
+    private final DatabaseService databaseService;
+
+    private PasswordWindow passwordWindow;
+    private HomeWindow homeWindow;
+
+    private ArrayList<Chatroom> chatrooms;
 
     public App() {
         SecurityService.setStaticListener(this);
         this.securityService = new SecurityService();
         this.userService = new UserService(this);
+        this.databaseService = new DatabaseService(this);
     }
 
     public void runTaskExecutorLoop() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                invokeLater(() -> {
+                    exit(); 
+                });
+            }
+        });
+
         try {
             while(true) {
                 this.taskQueue.take().run();
@@ -48,7 +71,14 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         }
     }
 
-    public void invokeLater(Runnable runnable) {
+    public void exit() {
+        this.databaseService.close();
+        this.userService.saveUser();
+        System.out.println("exit");
+        System.exit(0);
+    }
+
+    private void invokeLater(Runnable runnable) {
         try {
             this.taskQueue.put(runnable);
         } 
@@ -57,8 +87,27 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         }
     }
 
-    public void exit() {
-        System.exit(0);
+    private void printUser(User user) {
+        System.out.println("Nick:   " + user.getNick());
+        System.out.println("Port:   " + user.getPort());
+        System.out.println("Width:  " + user.getWindowSize().width);
+        System.out.println("Height: " + user.getWindowSize().height);
+        System.out.println("Secret key:  " + (new String(SecurityService.bytes2Hex(user.getSecretKey().getEncoded()))).substring(0, 32) + "...");
+        System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
+        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicLKey().getEncoded()))).substring(0, 32) + "...");
+    }
+
+    private void userLoaded(User user) {
+        this.printUser(user);
+
+        this.databaseService.load("chat.db");
+        chatrooms = this.databaseService.getChatrooms();
+
+        SwingUtilities.invokeLater(() -> {
+            homeWindow = new HomeWindow(user.getWindowSize());
+            homeWindow.setListener(this);
+            homeWindow.updateChatrooms(chatrooms);
+        });
     }
 
     @Override
@@ -87,7 +136,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void userServiceNeedsPassword() {
         SwingUtilities.invokeLater(() -> {
-            PasswordWindow passwordWindow = new PasswordWindow();
+            passwordWindow = new PasswordWindow();
 
             passwordWindow.setListener(new PasswordWindowListener() {
                 @Override
@@ -95,20 +144,6 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
                     invokeLater(() -> {
                         userService.loadUser(password);
                     });
-
-                    //String pass = new String(password);
-                    // if(pass.equals("test1234")) {
-                    //     SwingUtilities.invokeLater(() -> {
-                    //         passwordWindow.setVisible(false);
-                    //         passwordWindow.dispose();
-                    //         HomeWindow homeWindow = new HomeWindow();
-                    //     });
-                    // }
-                    // else {
-                    //     SwingUtilities.invokeLater(() -> {
-                    //         passwordWindow.setPasswordCorrect(false);
-                    //     });
-                    // }
                 }
 
                 @Override
@@ -124,33 +159,69 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
 
     @Override
     public void userServiceWrongPassword() {
-        System.out.println("Wrong password");
+        if(this.passwordWindow != null) {
+            SwingUtilities.invokeLater(() -> {
+                passwordWindow.setPasswordCorrect(false);
+            });
+        }
     }
 
     @Override 
     public void userServiceDidCreateUser(User user) {
-        System.out.println("Nick:   " + user.getNick());
-        System.out.println("Port:   " + user.getPort());
-        System.out.println("Width:  " + user.getWindowSize().width);
-        System.out.println("Height: " + user.getWindowSize().height);
-        System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
-        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicLKey().getEncoded()))).substring(0, 32) + "...");
+        if(this.passwordWindow != null) {
+            this.passwordWindow.setVisible(false);
+            this.passwordWindow.dispose();
+            this.passwordWindow = null;
+        }
+
+        this.userLoaded(user);
     }
 
     @Override 
     public void userServiceDidLoadUser(User user) {
-        System.out.println("Nick:   " + user.getNick());
-        System.out.println("Port:   " + user.getPort());
-        System.out.println("Width:  " + user.getWindowSize().width);
-        System.out.println("Height: " + user.getWindowSize().height);
-        System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
-        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicLKey().getEncoded()))).substring(0, 32) + "...");
+        if(this.passwordWindow != null) {
+            this.passwordWindow.setVisible(false);
+            this.passwordWindow.dispose();
+            this.passwordWindow = null;
+        }
+
+        this.userLoaded(user);
     }
 
     @Override
     public void securityServiceNoSuchAlgorithm() {
         System.err.println("No such algorithm");
-        System.exit(1);
+        this.exit();
+    }
+
+    @Override
+    public void databaseServiceSQLError() {
+        System.out.println("sql error");
+    }
+
+    @Override
+    public void homeWindowDidClose() {
+        invokeLater(() -> {
+            exit();
+        });
+    }
+
+    @Override
+    public void homeWindowDidResize(Dimension windowSize) {
+        
+    }
+
+    @Override
+    public void homeWindowDidClickNewChatroomButton() {
+        invokeLater(() -> {
+            final Chatroom chatroom = new Chatroom("The best chatroom!");
+            chatrooms.add(chatroom);
+            databaseService.insertChatroom(chatroom);
+
+            SwingUtilities.invokeLater(() -> {
+                homeWindow.updateChatrooms(chatrooms);
+            });
+        });
     }
 
     public static void main(String[] args) {

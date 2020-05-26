@@ -1,11 +1,38 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
+import java.nio.ByteBuffer;
+import java.util.UUID;
+
 
 public class Chatroom {
+    private int id;
+    private UUID uuid;
     private String name;
 
-    public Chatroom(String name) {
+    public Chatroom(int id, UUID uuid, String name) {
+        this.id = id;
+        this.uuid = uuid;
         this.name = name;
+    }
+
+    public Chatroom(UUID uuid, String name) {
+        this(0, uuid, name);
+    }
+
+    public Chatroom(String name) {
+        this(UUID.randomUUID(), name);
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return this.id;
+    }
+
+    public UUID getUuid() {
+        return this.uuid;
     }
 
     public String getName() {
