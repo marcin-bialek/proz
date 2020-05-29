@@ -4,6 +4,8 @@ import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeControllerListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordControllerListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupController;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupControllerListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
@@ -29,7 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 
 
-public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, PasswordControllerListener, HomeControllerListener {
+public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, PasswordControllerListener, SetupControllerListener, HomeControllerListener {
     public static final String APP_DISPLAY_NAME = "Chat";
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
@@ -119,23 +121,9 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void userServiceNeedsUser() {
         SwingUtilities.invokeLater(() -> {
-            SetupWindow setupWindow = new SetupWindow();
-
-            setupWindow.setListener(new SetupWindowListener() {
-                @Override
-                public void setupWindowDidSubmit(String nick, char[] password) {
-                    invokeLater(() -> {
-                        userService.createUser(nick, DEFAULT_PORT, password);
-                    });
-                }
-
-                @Override
-                public void setupWindowDidClose() {
-                    invokeLater(() -> { 
-                        exit(); 
-                    });
-                }
-            });
+            final SetupWindow view = new SetupWindow();
+            final SetupController controller = new SetupController(view);
+            controller.setListener(this);
         });
     }
 
@@ -176,6 +164,21 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void databaseServiceSQLError() {
         System.out.println("sql error");
+    }
+
+    @Override
+    public void setupControllerDidExit(SetupController sender) {
+        invokeLater(() -> {
+            exit();
+        });
+    }
+
+    @Override
+    public void setupControllerDidSetup(SetupController sender, String nick, char[] password, int port) {
+        invokeLater(() -> {
+            sender.closeWindow();
+            userService.createUser(nick, port, password);
+        });
     }
 
     @Override

@@ -1,8 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.setup;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -25,10 +23,11 @@ import javax.swing.JTextField;
 public class SetupWindow extends JFrame {
     private static final long serialVersionUID = 206072431562958302L;
     private SetupWindowListener listener;
+    private JButton submitButton;
 
     public SetupWindow() {
         super(App.APP_DISPLAY_NAME);
-        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setSize(new Dimension(300, 200));
         this.setResizable(false);
         this.setLocationRelativeTo(null);
@@ -48,6 +47,10 @@ public class SetupWindow extends JFrame {
 
     public void setListener(SetupWindowListener listener) {
         this.listener = listener;
+    }
+
+    public void setSubmitButtonEnabled(boolean enabled) {
+        this.submitButton.setEnabled(enabled);
     }
 
     private void initComponents() {
@@ -82,25 +85,33 @@ public class SetupWindow extends JFrame {
         passwordFieldConstraints.fill = GridBagConstraints.HORIZONTAL;
         this.add(passwordField, passwordFieldConstraints);
 
-        JButton submitButton = new JButton("Zapisz");
-        submitButton.setEnabled(false);
+        this.submitButton = new JButton("Zapisz");
+        this.submitButton.setEnabled(false);
         GridBagConstraints submitButtonConstraints = new GridBagConstraints();
         submitButtonConstraints.gridx = 0;
         submitButtonConstraints.gridy = 4;
         submitButtonConstraints.insets = new Insets(10, 10, 10, 10);
-        this.add(submitButton, submitButtonConstraints);
+        this.add(this.submitButton, submitButtonConstraints);
 
         nickField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
-                submitButton.setEnabled(
-                    UserService.isValidNick(nickField.getText()) &&
-                    SecurityService.isValidPassword(passwordField.getPassword())
-                );
+            public void keyReleased(KeyEvent event) {
+                if(listener != null) {
+                    listener.setupWindowDidNickChange(nickField.getText());
+                }
             }
         });
 
-        submitButton.addActionListener(new ActionListener() {
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent event) {
+                if(listener != null) {
+                    listener.setupWindowDidPasswordChange(passwordField.getPassword());
+                }
+            }
+        });
+
+        this.submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {

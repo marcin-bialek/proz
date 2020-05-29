@@ -100,6 +100,7 @@ public class HomeController implements HomeWindowListener {
 		}
 
 		final Message message = new TextMessage(this.activeChatroom, this.sender, text);
+		message.setIsSentByUser(true);
 		this.view.appendMessageToBottom(message);
 		this.activeChatroom.getMessages().add(message);
 		
