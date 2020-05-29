@@ -6,19 +6,16 @@ import java.security.PublicKey;
 import javax.crypto.SecretKey;
 
 
-public class User {
+public class User extends Peer {
     private SecretKey secretKey;
     private PrivateKey privateKey;
-    private PublicKey publicKey;
-    private String nick;
     private int port;
     private Dimension windowSize;
 
     public User(SecretKey secretKey, PrivateKey privateKey, PublicKey publicKey, String nick, int port, Dimension windowSize) {
+        super(0, nick, "0.0.0.0", port, publicKey);
         this.secretKey = secretKey;
         this.privateKey = privateKey;
-        this.publicKey = publicKey;
-        this.nick = nick;
         this.port = port;
         this.windowSize = windowSize;
     }
@@ -29,18 +26,6 @@ public class User {
 
     public PrivateKey getPrivateKey() {
         return this.privateKey;
-    }
-
-    public PublicKey getPublicLKey() {
-        return this.publicKey;
-    }
-
-    public String getNick() {
-        return this.nick;
-    }
-
-    public int getPort() {
-        return this.port;
     }
 
     public Dimension getWindowSize() {

@@ -16,14 +16,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
+
+
 public class PasswordWindow extends JFrame {
     private static final long serialVersionUID = -1741907328559266181L;
     private PasswordWindowListener listener;
     private JPasswordField passwordField;
 
     public PasswordWindow() {
-        super("Chat");
-        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        super(App.APP_DISPLAY_NAME);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setSize(new Dimension(300, 130));
         this.setResizable(false);
         this.setLocationRelativeTo(null);

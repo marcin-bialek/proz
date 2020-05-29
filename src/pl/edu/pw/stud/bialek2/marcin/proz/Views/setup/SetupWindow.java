@@ -1,5 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.setup;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 
@@ -26,7 +27,7 @@ public class SetupWindow extends JFrame {
     private SetupWindowListener listener;
 
     public SetupWindow() {
-        super("Chat");
+        super(App.APP_DISPLAY_NAME);
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setSize(new Dimension(300, 200));
         this.setResizable(false);

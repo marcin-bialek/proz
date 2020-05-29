@@ -3,30 +3,59 @@ package pl.edu.pw.stud.bialek2.marcin.proz.models;
 import java.time.LocalDateTime;
 
 
-public class Message {
-    private boolean sentByMe;
-    private String text;
-    private LocalDateTime date;
+public abstract class Message {
+    private int id;
+    private Chatroom chatroom;
+    private Peer peer;
+    private MessageType type;
+    private LocalDateTime timestamp;
+    private boolean isSentByUser;
 
-    public Message(String text, boolean sentByMe) {
-        this(text, sentByMe, LocalDateTime.now());
+    public Message(int id, Chatroom chatroom, Peer peer, MessageType type, LocalDateTime timestamp) {
+        this.id = id;
+        this.chatroom = chatroom;
+        this.peer = peer;
+        this.type = type;
+        this.timestamp = timestamp;
+        this.isSentByUser = false;
     }
 
-    public Message(String text, boolean sentByMe, LocalDateTime date) {
-        this.text = text;
-        this.sentByMe = sentByMe;
-        this.date = date;
+    public Message(Chatroom chatroom, Peer peer, MessageType type) {
+        this(0, chatroom, peer, type, LocalDateTime.now());
     }
 
-    public String getText() {
-        return this.text;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public boolean isSentByMe() {
-        return this.sentByMe;
+    public int getId() {
+        return this.id;
     }
 
-    public LocalDateTime getDate() {
-        return this.date;
+    public Chatroom getChatroom() {
+        return this.chatroom;
     }
+
+    public Peer getPeer() {
+        return this.peer;
+    }
+
+    public MessageType getType() {
+        return this.type;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return this.timestamp;
+    }
+
+    public void setIsSentByUser(boolean isSentByUser) {
+        this.isSentByUser = isSentByUser;
+    }
+
+    public boolean getIsSentByUser() {
+        return this.isSentByUser;
+    }
+
+    abstract public String getValueAsString();
+    abstract public byte[] getValueAsBytes();
 }

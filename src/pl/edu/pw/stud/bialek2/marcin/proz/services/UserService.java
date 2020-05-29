@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 
 public class UserService {
     private static final String SECRET_KEY_KEY = "secret-key";
+    private static final String DATABASE_ID_KEY = "database-id";
     private static final String NICK_KEY = "nick";
     private static final String PORT_KEY = "port";
     private static final String WINDOW_WIDTH_KEY = "window-width";
@@ -64,6 +65,7 @@ public class UserService {
         }
 
         try {
+            final int databaseId = this.getSecureInt(DATABASE_ID_KEY, -1, secretKey);
             final String nick = this.getSecureString(NICK_KEY, null, secretKey);
             final int port = this.getSecureInt(PORT_KEY, App.DEFAULT_PORT, secretKey);
             final int windowWidth = this.getSecureInt(WINDOW_WIDTH_KEY, App.DEFAULT_WINDOW_WIDTH, secretKey);
@@ -72,7 +74,7 @@ public class UserService {
             final byte[] privateKeyRaw = this.getSecureByteArray(PRIVATE_KEY_KEY, null, secretKey);
             final byte[] publicKeyRaw = this.getSecureByteArray(PUBLIC_KEY_KEY, null, secretKey);
 
-            if(nick == null || privateKeyRaw == null || publicKeyRaw == null) {
+            if(databaseId == -1 || nick == null || privateKeyRaw == null || publicKeyRaw == null) {
                 this.listener.userServiceNeedsUser();
                 return;
             }
@@ -81,6 +83,7 @@ public class UserService {
             final PrivateKey privateKey = keyPair.getPrivate();
             final PublicKey publicKey = keyPair.getPublic();
             this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
+            this.user.setId(databaseId);
             this.listener.userServiceDidLoadUser(this.user);
         }
         catch(WrongPasswordException e) {
@@ -91,12 +94,13 @@ public class UserService {
     public void saveUser() {
         try {
             final SecretKey secretKey = this.user.getSecretKey();
+            this.putSecureInt(DATABASE_ID_KEY, this.user.getId(), secretKey);
             this.putSecureString(NICK_KEY, this.user.getNick(), secretKey);
-            this.putSecureInt(PORT_KEY, this.user.getPort(), secretKey);
+            this.putSecureInt(PORT_KEY, this.user.getLastPort(), secretKey);
             this.putSecureInt(WINDOW_WIDTH_KEY, this.user.getWindowSize().width, secretKey);
             this.putSecureInt(WINDOW_HEIGHT_KEY, this.user.getWindowSize().height, secretKey);
             this.putSecureByteArray(PRIVATE_KEY_KEY, this.user.getPrivateKey().getEncoded(), secretKey);
-            this.putSecureByteArray(PUBLIC_KEY_KEY, this.user.getPublicLKey().getEncoded(), secretKey);
+            this.putSecureByteArray(PUBLIC_KEY_KEY, this.user.getPublicKey().getEncoded(), secretKey);
         }
         catch(WrongPasswordException e) {
             this.listener.userServiceWrongPassword();

@@ -1,6 +1,9 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeController;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeControllerListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
@@ -10,7 +13,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticListener
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
@@ -26,7 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 
 
-public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, HomeWindowListener {
+public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, HomeControllerListener {
+    public static final String APP_DISPLAY_NAME = "Chat";
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
     public static final Color SECONDARY_COLOR = new Color(77, 100, 141);
@@ -34,6 +37,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     public static final int DEFAULT_PORT = 8765;
     public static final int DEFAULT_WINDOW_WIDTH = 700;
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
+    public static final String DATABASE_FILE_NAME = "chat.db";
 
     private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
     private final SecurityService securityService;
@@ -41,9 +45,9 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     private final DatabaseService databaseService;
 
     private PasswordWindow passwordWindow;
-    private HomeWindow homeWindow;
 
     private ArrayList<Chatroom> chatrooms;
+    private ArrayList<Peer> peers;
 
     public App() {
         SecurityService.setStaticListener(this);
@@ -89,24 +93,27 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
 
     private void printUser(User user) {
         System.out.println("Nick:   " + user.getNick());
-        System.out.println("Port:   " + user.getPort());
+        System.out.println("Port:   " + user.getLastPort());
         System.out.println("Width:  " + user.getWindowSize().width);
         System.out.println("Height: " + user.getWindowSize().height);
         System.out.println("Secret key:  " + (new String(SecurityService.bytes2Hex(user.getSecretKey().getEncoded()))).substring(0, 32) + "...");
         System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
-        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicLKey().getEncoded()))).substring(0, 32) + "...");
+        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicKey().getEncoded()))).substring(0, 32) + "...");
     }
 
     private void userLoaded(User user) {
-        this.printUser(user);
+        //this.printUser(user);
 
-        this.databaseService.load("chat.db");
-        chatrooms = this.databaseService.getChatrooms();
+        this.chatrooms = this.databaseService.getChatrooms();
+
+        for(Chatroom chatroom : chatrooms) {
+            chatroom.setPeers(this.databaseService.getPeersFor(chatroom));
+        }
 
         SwingUtilities.invokeLater(() -> {
-            homeWindow = new HomeWindow(user.getWindowSize());
-            homeWindow.setListener(this);
-            homeWindow.updateChatrooms(chatrooms);
+            final HomeWindow view = new HomeWindow(user.getWindowSize());
+            final HomeController homeController = new HomeController(view, user, chatrooms);
+            homeController.setListener(this);
         });
     }
 
@@ -174,6 +181,9 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
             this.passwordWindow = null;
         }
 
+        this.databaseService.load(DATABASE_FILE_NAME);
+        this.databaseService.insertPeer(user);
+        this.userService.saveUser();
         this.userLoaded(user);
     }
 
@@ -185,6 +195,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
             this.passwordWindow = null;
         }
 
+        this.databaseService.load(DATABASE_FILE_NAME);
         this.userLoaded(user);
     }
 
@@ -200,26 +211,34 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     }
 
     @Override
-    public void homeWindowDidClose() {
+    public void homeControllerDidExit(HomeController sender) {
         invokeLater(() -> {
             exit();
         });
     }
 
     @Override
-    public void homeWindowDidResize(Dimension windowSize) {
-        
+    public void homeControllerDidEnterMessage(HomeController sender, Message message) {
+        invokeLater(() -> {
+            databaseService.insertMessage(message);
+        });
     }
 
     @Override
-    public void homeWindowDidClickNewChatroomButton() {
+    public void homeControllerDidCreateChatroom(HomeController sender, Chatroom chatroom) {
         invokeLater(() -> {
-            final Chatroom chatroom = new Chatroom("The best chatroom!");
-            chatrooms.add(chatroom);
             databaseService.insertChatroom(chatroom);
+            databaseService.bindPeerAndChatroom(userService.getUser(), chatroom);
+        });
+    }
+
+    @Override
+    public void homeControllerLoadMessages(HomeController sender, Chatroom chatroom) {
+        invokeLater(() -> {
+            chatroom.setMessages(databaseService.getMessagesFor(chatroom));
 
             SwingUtilities.invokeLater(() -> {
-                homeWindow.updateChatrooms(chatrooms);
+                sender.loadedMessagesFor(chatroom);
             });
         });
     }
