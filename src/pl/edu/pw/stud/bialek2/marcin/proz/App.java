@@ -12,6 +12,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
@@ -19,7 +20,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindowListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,6 +46,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     private final SecurityService securityService;
     private final UserService userService; 
     private final DatabaseService databaseService;
+    private final P2PService p2pService;
 
     private ArrayList<Chatroom> chatrooms;
     private ArrayList<Peer> peers;
@@ -55,6 +56,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         this.securityService = new SecurityService();
         this.userService = new UserService(this);
         this.databaseService = new DatabaseService(this);
+        this.p2pService = new P2PService(DEFAULT_PORT);
     }
 
     public void runTaskExecutorLoop() {
@@ -106,6 +108,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         //this.printUser(user);
 
         this.chatrooms = this.databaseService.getChatrooms();
+        this.p2pService.start();
 
         for(Chatroom chatroom : chatrooms) {
             chatroom.setPeers(this.databaseService.getPeersFor(chatroom));
