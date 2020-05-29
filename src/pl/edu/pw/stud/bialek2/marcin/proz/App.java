@@ -2,6 +2,8 @@ package pl.edu.pw.stud.bialek2.marcin.proz;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeControllerListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordController;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordControllerListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
@@ -14,7 +16,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindowListener;
 
@@ -28,7 +29,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 
 
-public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, HomeControllerListener {
+public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, PasswordControllerListener, HomeControllerListener {
     public static final String APP_DISPLAY_NAME = "Chat";
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
@@ -43,8 +44,6 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     private final SecurityService securityService;
     private final UserService userService; 
     private final DatabaseService databaseService;
-
-    private PasswordWindow passwordWindow;
 
     private ArrayList<Chatroom> chatrooms;
     private ArrayList<Peer> peers;
@@ -112,8 +111,8 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
 
         SwingUtilities.invokeLater(() -> {
             final HomeWindow view = new HomeWindow(user.getWindowSize());
-            final HomeController homeController = new HomeController(view, user, chatrooms);
-            homeController.setListener(this);
+            final HomeController controller = new HomeController(view, user, chatrooms);
+            controller.setListener(this);
         });
     }
 
@@ -143,44 +142,19 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void userServiceNeedsPassword() {
         SwingUtilities.invokeLater(() -> {
-            passwordWindow = new PasswordWindow();
-
-            passwordWindow.setListener(new PasswordWindowListener() {
-                @Override
-                public void passwordWindowDidSubmit(char[] password) {
-                    invokeLater(() -> {
-                        userService.loadUser(password);
-                    });
-                }
-
-                @Override
-                public void passwordWindowDidClose() {
-                    invokeLater(() -> { 
-                        System.out.println("password window exit");
-                        exit(); 
-                    });
-                }
-            });
+            final PasswordWindow view = new PasswordWindow();
+            final PasswordController controller = new PasswordController(view);
+            controller.setListener(this);
         });
     }
 
     @Override
     public void userServiceWrongPassword() {
-        if(this.passwordWindow != null) {
-            SwingUtilities.invokeLater(() -> {
-                passwordWindow.setPasswordCorrect(false);
-            });
-        }
+        
     }
 
     @Override 
     public void userServiceDidCreateUser(User user) {
-        if(this.passwordWindow != null) {
-            this.passwordWindow.setVisible(false);
-            this.passwordWindow.dispose();
-            this.passwordWindow = null;
-        }
-
         this.databaseService.load(DATABASE_FILE_NAME);
         this.databaseService.insertPeer(user);
         this.userService.saveUser();
@@ -189,12 +163,6 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
 
     @Override 
     public void userServiceDidLoadUser(User user) {
-        if(this.passwordWindow != null) {
-            this.passwordWindow.setVisible(false);
-            this.passwordWindow.dispose();
-            this.passwordWindow = null;
-        }
-
         this.databaseService.load(DATABASE_FILE_NAME);
         this.userLoaded(user);
     }
@@ -208,6 +176,30 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void databaseServiceSQLError() {
         System.out.println("sql error");
+    }
+
+    @Override
+    public void passwordControllerDidExit(PasswordController sender) {
+        invokeLater(() -> { 
+            System.out.println("password window exit");
+            exit(); 
+        });
+    }
+
+    @Override
+    public void passwordControllerDidEnterPassword(PasswordController sender, char[] password) {
+        invokeLater(() -> {
+            final boolean result = userService.loadUser(password);
+
+            SwingUtilities.invokeLater(() -> {
+                if(result) {
+                    sender.closeWindow();
+                }
+                else {
+                    sender.setPasswordIncorrect();
+                }
+            });
+        });
     }
 
     @Override

@@ -47,14 +47,9 @@ public class PasswordWindow extends JFrame {
     public void setListener(PasswordWindowListener listener) {
         this.listener = listener;
     }
-
-    public void setPasswordCorrect(boolean isCorrect) {
-        if(isCorrect) {
-            this.passwordField.setBorder(BorderFactory.createEmptyBorder());
-        }
-        else {
-            this.passwordField.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
-        }
+    
+    public void setPasswordFieldBorderColor(Color color) {
+        this.passwordField.setBorder(BorderFactory.createLineBorder(color, 1));
     }
 
     private void initComponents() {

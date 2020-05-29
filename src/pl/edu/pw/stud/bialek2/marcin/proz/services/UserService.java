@@ -43,10 +43,10 @@ public class UserService {
         this.listener.userServiceDidCreateUser(this.user);
     }
 
-    public void loadUser(final char[] password) {
+    public boolean loadUser(final char[] password) {
         if(this.preferences.get(NICK_KEY, null) == null) {
             this.listener.userServiceNeedsUser();
-            return;
+            return true;
         }
 
         final byte[] secretKeyRaw = this.preferences.getByteArray(SECRET_KEY_KEY, null);
@@ -55,7 +55,7 @@ public class UserService {
         if(secretKeyRaw == null) {
             if(password == null) {
                 this.listener.userServiceNeedsPassword();
-                return;
+                return true;
             }
             
             secretKey = SecurityService.generateSecretKey(password);
@@ -76,7 +76,7 @@ public class UserService {
 
             if(databaseId == -1 || nick == null || privateKeyRaw == null || publicKeyRaw == null) {
                 this.listener.userServiceNeedsUser();
-                return;
+                return true;
             }
 
             final KeyPair keyPair = SecurityService.generateKeyPair(privateKeyRaw, publicKeyRaw);
@@ -88,10 +88,17 @@ public class UserService {
         }
         catch(WrongPasswordException e) {
             this.listener.userServiceWrongPassword();
+            return false;
         }
+
+        return true;
     }
 
     public void saveUser() {
+        if(this.user == null) {
+            return;
+        }
+        
         try {
             final SecretKey secretKey = this.user.getSecretKey();
             this.putSecureInt(DATABASE_ID_KEY, this.user.getId(), secretKey);
