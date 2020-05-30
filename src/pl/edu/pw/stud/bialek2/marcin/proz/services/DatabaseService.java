@@ -8,11 +8,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageFactory;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
@@ -246,18 +248,16 @@ public class DatabaseService {
             while(result.next()) {
                 final int id = result.getInt(1);
                 final int peerId = result.getInt(3);
-                final int type = result.getInt(4);
+                final MessageType type = MessageType.fromValue(result.getInt(4));
                 final byte[] value = result.getBytes(5);
-                final Timestamp timestamp = result.getTimestamp(6);
+                final LocalDateTime timestamp = result.getTimestamp(6).toLocalDateTime();
                 final Peer peer = chatroom.getPeerById(peerId); 
 
                 if(peer == null) {
                     continue;
                 }
 
-                if(type == MessageType.TEXT_MESSAGE.getValue()) {
-                    messages.add(new TextMessage(id, chatroom, peer, timestamp.toLocalDateTime(), value));
-                }  
+                messages.add(MessageFactory.createMessage(type, id, chatroom, peer, timestamp, value));
             }
         }
         catch(SQLException e) {

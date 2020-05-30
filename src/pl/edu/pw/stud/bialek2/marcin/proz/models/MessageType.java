@@ -2,7 +2,8 @@ package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
 
 public enum MessageType {
-    TEXT_MESSAGE(0);
+    NULL_MESSAGE(0),
+    TEXT_MESSAGE(1);
     
     private final int value;
 
@@ -12,5 +13,13 @@ public enum MessageType {
 
     public int getValue() {
         return this.value;
+    }
+
+    public static MessageType fromValue(int value) {
+        if(value == 1) {
+            return TEXT_MESSAGE;
+        }
+
+        return NULL_MESSAGE;
     }
 }
