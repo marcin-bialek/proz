@@ -21,12 +21,12 @@ public class UserService {
     private static final String PRIVATE_KEY_KEY = "private-key";
     private static final String PUBLIC_KEY_KEY = "public-key";
 
-    private UserServiceListener listener;
+    private UserServiceDelegate delegate;
     private Preferences preferences;
     private User user;
 
-    public UserService(UserServiceListener listener) {
-        this.listener = listener;
+    public UserService(UserServiceDelegate delegate) {
+        this.delegate = delegate;
         this.preferences = Preferences.userRoot().node(this.getClass().getName());
         System.out.println(this.getClass().getName());
     }
@@ -40,12 +40,12 @@ public class UserService {
 
         this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
         this.saveUser();
-        this.listener.userServiceDidCreateUser(this.user);
+        this.delegate.userServiceDidCreateUser(this.user);
     }
 
     public boolean loadUser(final char[] password) {
         if(this.preferences.get(NICK_KEY, null) == null) {
-            this.listener.userServiceNeedsUser();
+            this.delegate.userServiceNeedsUser();
             return true;
         }
 
@@ -54,7 +54,7 @@ public class UserService {
 
         if(secretKeyRaw == null) {
             if(password == null) {
-                this.listener.userServiceNeedsPassword();
+                this.delegate.userServiceNeedsPassword();
                 return true;
             }
             
@@ -75,7 +75,7 @@ public class UserService {
             final byte[] publicKeyRaw = this.getSecureByteArray(PUBLIC_KEY_KEY, null, secretKey);
 
             if(databaseId == -1 || nick == null || privateKeyRaw == null || publicKeyRaw == null) {
-                this.listener.userServiceNeedsUser();
+                this.delegate.userServiceNeedsUser();
                 return true;
             }
 
@@ -84,10 +84,10 @@ public class UserService {
             final PublicKey publicKey = keyPair.getPublic();
             this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
             this.user.setId(databaseId);
-            this.listener.userServiceDidLoadUser(this.user);
+            this.delegate.userServiceDidLoadUser(this.user);
         }
         catch(WrongPasswordException e) {
-            this.listener.userServiceWrongPassword();
+            this.delegate.userServiceWrongPassword();
             return false;
         }
 
@@ -98,7 +98,7 @@ public class UserService {
         if(this.user == null) {
             return;
         }
-        
+
         try {
             final SecretKey secretKey = this.user.getSecretKey();
             this.putSecureInt(DATABASE_ID_KEY, this.user.getId(), secretKey);
@@ -110,7 +110,7 @@ public class UserService {
             this.putSecureByteArray(PUBLIC_KEY_KEY, this.user.getPublicKey().getEncoded(), secretKey);
         }
         catch(WrongPasswordException e) {
-            this.listener.userServiceWrongPassword();
+            this.delegate.userServiceWrongPassword();
         }
     }
 

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 
 public class HomeController implements HomeWindowListener {
-	private HomeControllerListener listener;
+	private HomeControllerDelegate delegate;
 	private HomeWindow view;
 	private Chatroom activeChatroom;
 	private Peer sender;
@@ -29,8 +29,8 @@ public class HomeController implements HomeWindowListener {
 		}
 	}
 	
-	public void setListener(HomeControllerListener listener) {
-		this.listener = listener;
+	public void setDelegate(HomeControllerDelegate delegate) {
+		this.delegate = delegate;
 	}
 
 	private void displayActiveChatroomMessages() {
@@ -58,8 +58,8 @@ public class HomeController implements HomeWindowListener {
 
 	@Override
 	public void homeWindowDidClose() {
-		if(this.listener != null) {
-			this.listener.homeControllerDidExit(this);
+		if(this.delegate != null) {
+			this.delegate.homeControllerDidExit(this);
 		}
 	}
 
@@ -71,11 +71,11 @@ public class HomeController implements HomeWindowListener {
 		addChatroomWindow.setListener(new AddChatroomWindowListener() {
 			@Override
 			public void addChatroomWindowDidCreateChatroom(Chatroom chatroom) {
-				if(listener != null) {
+				if(delegate != null) {
 					addChatroomWindow.setVisible(false);
 					addChatroomWindow.dispose();
 					view.appendChatroom(chatroom);
-					listener.homeControllerDidCreateChatroom(sender, chatroom);
+					delegate.homeControllerDidCreateChatroom(sender, chatroom);
 				}
 			}
 		});
@@ -88,8 +88,8 @@ public class HomeController implements HomeWindowListener {
 		if(chatroom.getMessages() != null) {
 			this.displayActiveChatroomMessages();
 		}
-		else if(this.listener != null) {
-			this.listener.homeControllerLoadMessages(this, chatroom);
+		else if(this.delegate != null) {
+			this.delegate.homeControllerLoadMessages(this, chatroom);
 		}
 	}
 
@@ -104,8 +104,8 @@ public class HomeController implements HomeWindowListener {
 		this.view.appendMessageToBottom(message);
 		this.activeChatroom.getMessages().add(message);
 		
-		if(this.listener != null) {
-			this.listener.homeControllerDidEnterMessage(this, message);
+		if(this.delegate != null) {
+			this.delegate.homeControllerDidEnterMessage(this, message);
 		}
 	}
 }

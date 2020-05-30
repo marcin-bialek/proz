@@ -17,7 +17,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 
 public class P2PService extends Thread {
-    private P2PServiceListener listener;
+    private P2PServiceDelegate delegate;
     private int port;
     private Selector selector;
     private ServerSocketChannel serverSocket;
@@ -25,12 +25,9 @@ public class P2PService extends Thread {
     private ByteBuffer buffer;
     private ByteArrayOutputStream message;
     private Set<SocketChannel> connecting;
-    
-    public void setListener(P2PServiceListener listener) {
-        this.listener = listener;
-    }
 
-    public P2PService(int port) {
+    public P2PService(P2PServiceDelegate delegate, int port) {
+        this.delegate = delegate;
         this.port = port;
         this.isListening = new AtomicBoolean(false);
         this.buffer = ByteBuffer.allocate(128);

@@ -57,11 +57,11 @@ public class DatabaseService {
     private final static String INSERT_MESSAGE_QUERY = "INSERT INTO messages (chatroom_id, peer_id, type, value, timestamp) VALUES (?, ?, ?, ?, ?);";
     private final static String INSERT_PEER_CHATROOM = "INSERT INTO peer_chatroom (peer_id, chatroom_id) VALUES (?, ?);";
 
-    private DatabaseServiceListener listener;
+    private DatabaseServiceDelegate delegate;
     private Connection connection;
     
-    public DatabaseService(DatabaseServiceListener listener) {
-        this.listener = listener;
+    public DatabaseService(DatabaseServiceDelegate delegate) {
+        this.delegate = delegate;
     }
 
     public void load(String path) {
@@ -75,7 +75,7 @@ public class DatabaseService {
         } 
         catch (SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
     }
 
@@ -87,7 +87,7 @@ public class DatabaseService {
             }
             catch(SQLException e) {
                 e.printStackTrace();
-                this.listener.databaseServiceSQLError();
+                this.delegate.databaseServiceSQLError();
             }
         }
     }
@@ -122,7 +122,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
     }
 
@@ -145,7 +145,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
 
         return peers;
@@ -169,7 +169,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
     }
 
@@ -189,7 +189,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
 
         return chatrooms;
@@ -208,7 +208,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
     }
 
@@ -233,7 +233,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
     }
 
@@ -262,7 +262,7 @@ public class DatabaseService {
         }
         catch(SQLException e) {
             e.printStackTrace();
-            this.listener.databaseServiceSQLError();
+            this.delegate.databaseServiceSQLError();
         }
 
         return messages;

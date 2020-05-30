@@ -3,7 +3,7 @@ package pl.edu.pw.stud.bialek2.marcin.proz.services;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 
 
-public interface UserServiceListener {
+public interface UserServiceDelegate {
     public void userServiceNeedsUser();
     public void userServiceNeedsPassword();
     public void userServiceWrongPassword();

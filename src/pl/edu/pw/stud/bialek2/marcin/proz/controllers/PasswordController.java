@@ -7,7 +7,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindowListener;
 
 
 public class PasswordController implements PasswordWindowListener {
-    private PasswordControllerListener listener;
+    private PasswordControllerDelegate delegate;
     private PasswordWindow view;
 
     public PasswordController(PasswordWindow view) {
@@ -15,8 +15,8 @@ public class PasswordController implements PasswordWindowListener {
         this.view.setListener(this);
     }
 
-    public void setListener(PasswordControllerListener listener) {
-        this.listener = listener;
+    public void setDelegate(PasswordControllerDelegate delegate) {
+        this.delegate = delegate;
     }
 
     public void setPasswordIncorrect() {
@@ -30,15 +30,15 @@ public class PasswordController implements PasswordWindowListener {
 
     @Override
     public void passwordWindowDidClose() {
-        if(this.listener != null) {
-            this.listener.passwordControllerDidExit(this);
+        if(this.delegate != null) {
+            this.delegate.passwordControllerDidExit(this);
         }
     }
 
     @Override
     public void passwordWindowDidSubmit(char[] password) {
-        if(this.listener != null) {
-            this.listener.passwordControllerDidEnterPassword(this, password);
+        if(this.delegate != null) {
+            this.delegate.passwordControllerDidEnterPassword(this, password);
         }
     }
 }

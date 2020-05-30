@@ -13,7 +13,7 @@ import javax.swing.JTextField;
 
 
 public class SetupController implements SetupWindowListener {
-    private SetupControllerListener listener;
+    private SetupControllerDelegate delegate;
     private SetupWindow view;
     private boolean isNickValid = false;
     private boolean isPasswordValid = false;
@@ -23,8 +23,8 @@ public class SetupController implements SetupWindowListener {
         this.view.setListener(this);
     }
 
-    public void setListener(SetupControllerListener listener) {
-        this.listener = listener;
+    public void setDelegate(SetupControllerDelegate delegate) {
+        this.delegate = delegate;
     }
 
     public void closeWindow() {
@@ -34,15 +34,15 @@ public class SetupController implements SetupWindowListener {
 
     @Override
     public void setupWindowDidClose() {
-        if(this.listener != null) {
-            this.listener.setupControllerDidExit(this);
+        if(this.delegate != null) {
+            this.delegate.setupControllerDidExit(this);
         }
     }
 
     @Override
     public void setupWindowDidSubmit(String nick, char[] password) {
-        if(this.listener != null && this.isNickValid && this.isPasswordValid) {
-            this.listener.setupControllerDidSetup(this, nick, password, App.DEFAULT_PORT);
+        if(this.delegate != null && this.isNickValid && this.isPasswordValid) {
+            this.delegate.setupControllerDidSetup(this, nick, password, App.DEFAULT_PORT);
         }
     }
 

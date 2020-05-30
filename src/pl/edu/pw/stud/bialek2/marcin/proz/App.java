@@ -1,22 +1,23 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeController;
-import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeControllerListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.HomeControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordController;
-import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordControllerListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupController;
-import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupControllerListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
@@ -31,7 +32,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.SwingUtilities;
 
 
-public final class App implements UserServiceListener, SecurityServiceStaticListener, DatabaseServiceListener, PasswordControllerListener, SetupControllerListener, HomeControllerListener {
+public final class App implements UserServiceDelegate, SecurityServiceStaticDelegate, DatabaseServiceDelegate, P2PServiceDelegate, PasswordControllerDelegate, SetupControllerDelegate, HomeControllerDelegate {
     public static final String APP_DISPLAY_NAME = "Chat";
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
@@ -52,11 +53,11 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     private ArrayList<Peer> peers;
 
     public App() {
-        SecurityService.setStaticListener(this);
+        SecurityService.setStaticDelegate(this);
         this.securityService = new SecurityService();
         this.userService = new UserService(this);
         this.databaseService = new DatabaseService(this);
-        this.p2pService = new P2PService(DEFAULT_PORT);
+        this.p2pService = new P2PService(this, DEFAULT_PORT);
     }
 
     public void runTaskExecutorLoop() {
@@ -117,7 +118,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         SwingUtilities.invokeLater(() -> {
             final HomeWindow view = new HomeWindow(user.getWindowSize());
             final HomeController controller = new HomeController(view, user, chatrooms);
-            controller.setListener(this);
+            controller.setDelegate(this);
         });
     }
 
@@ -126,7 +127,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         SwingUtilities.invokeLater(() -> {
             final SetupWindow view = new SetupWindow();
             final SetupController controller = new SetupController(view);
-            controller.setListener(this);
+            controller.setDelegate(this);
         });
     }
 
@@ -135,7 +136,7 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
         SwingUtilities.invokeLater(() -> {
             final PasswordWindow view = new PasswordWindow();
             final PasswordController controller = new PasswordController(view);
-            controller.setListener(this);
+            controller.setDelegate(this);
         });
     }
 
@@ -167,6 +168,11 @@ public final class App implements UserServiceListener, SecurityServiceStaticList
     @Override
     public void databaseServiceSQLError() {
         System.out.println("sql error");
+    }
+
+    @Override
+    public void p2pServiceIncomingConnection() {
+        
     }
 
     @Override

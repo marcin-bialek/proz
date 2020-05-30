@@ -28,10 +28,10 @@ public class SecurityService {
     private static final String SYMMETRIC_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
     private static final String ASYMMETRIC_CIPHER_ALGORITHM = "RSA";
     private static final String ASYMMETRIC_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
-    private static SecurityServiceStaticListener staticListener;
+    private static SecurityServiceStaticDelegate staticDelegate;
 
-    public static void setStaticListener(SecurityServiceStaticListener staticListener) {
-        SecurityService.staticListener = staticListener;
+    public static void setStaticDelegate(SecurityServiceStaticDelegate staticDelegate) {
+        SecurityService.staticDelegate = staticDelegate;
     }
 
     public static char[] bytes2Hex(final byte[] input) {
@@ -51,7 +51,7 @@ public class SecurityService {
             ByteBuffer buffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(input));
             return messageDigest.digest(buffer.array());
         } catch (NoSuchAlgorithmException e) {
-            staticListener.securityServiceNoSuchAlgorithm();
+            staticDelegate.securityServiceNoSuchAlgorithm();
         }
 
         return null;
@@ -77,7 +77,7 @@ public class SecurityService {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
             return generator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
-            staticListener.securityServiceNoSuchAlgorithm();
+            staticDelegate.securityServiceNoSuchAlgorithm();
         }
 
         return null;
@@ -115,7 +115,7 @@ public class SecurityService {
             return cipher.doFinal(input);
         }
         catch(NoSuchAlgorithmException e) {
-            staticListener.securityServiceNoSuchAlgorithm();
+            staticDelegate.securityServiceNoSuchAlgorithm();
         }
         catch(NoSuchPaddingException e) {
             e.printStackTrace();
