@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
 import java.security.PublicKey;
+import java.util.HashMap;
 
 
 public class Peer {
@@ -9,6 +10,8 @@ public class Peer {
     private String lastAddress;
     private int lastPort;
     private PublicKey publicKey;
+    private HashMap<Integer, Chatroom> chatrooms;
+    private P2PSession session;
 
     public Peer(int id, String nick, String lastAddress, int lastPort, PublicKey publicKey) {
         this.id = id;
@@ -16,6 +19,8 @@ public class Peer {
         this.lastAddress = lastAddress;
         this.lastPort = lastPort;
         this.publicKey = publicKey;
+        this.chatrooms = new HashMap<>();
+        this.session = new P2PSession(this);
     }
 
     public Peer(String nick, String lastAddress, int lastPort, PublicKey publicKey) {
@@ -44,5 +49,17 @@ public class Peer {
 
     public PublicKey getPublicKey() {
         return this.publicKey;
+    }
+
+    public void addChatroom(Chatroom chatroom) {
+        this.chatrooms.put(chatroom.getId(), chatroom);
+    }
+
+    public HashMap<Integer, Chatroom> getChatrooms() {
+        return this.chatrooms;
+    }
+
+    public P2PSession getSession() {
+        return this.session;
     }
 }

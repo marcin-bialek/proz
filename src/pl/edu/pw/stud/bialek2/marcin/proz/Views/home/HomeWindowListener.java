@@ -10,6 +10,7 @@ public interface HomeWindowListener {
     public void homeWindowDidResize(Dimension windowSize);
     public void homeWindowDidClose();
     public void homeWindowDidClickAddChatroomButton();   
+    public void homeWindowDidClickSettingsButton();   
     public void homeWindowDidChangeChatroom(Chatroom chatroom);
     public void homeWindowDidEnterMessage(String value); 
 }

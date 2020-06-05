@@ -25,6 +25,8 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,8 +51,8 @@ public final class App implements UserServiceDelegate, SecurityServiceStaticDele
     private final DatabaseService databaseService;
     private final P2PService p2pService;
 
-    private ArrayList<Chatroom> chatrooms;
-    private ArrayList<Peer> peers;
+    private HashMap<Integer, Chatroom> chatrooms;
+    private HashMap<Integer, Peer> peers;
 
     public App() {
         SecurityService.setStaticDelegate(this);
@@ -80,6 +82,7 @@ public final class App implements UserServiceDelegate, SecurityServiceStaticDele
     }
 
     public void exit() {
+        this.p2pService.stopListening();
         this.databaseService.close();
         this.userService.saveUser();
         System.out.println("exit");
@@ -96,24 +99,35 @@ public final class App implements UserServiceDelegate, SecurityServiceStaticDele
     }
 
     private void printUser(User user) {
-        System.out.println("Nick:   " + user.getNick());
-        System.out.println("Port:   " + user.getLastPort());
-        System.out.println("Width:  " + user.getWindowSize().width);
-        System.out.println("Height: " + user.getWindowSize().height);
+        System.out.println("Nick:        " + user.getNick());
+        System.out.println("Port:        " + user.getLastPort());
+        System.out.println("Width:       " + user.getWindowSize().width);
+        System.out.println("Height:      " + user.getWindowSize().height);
         System.out.println("Secret key:  " + (new String(SecurityService.bytes2Hex(user.getSecretKey().getEncoded()))).substring(0, 32) + "...");
         System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
         System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicKey().getEncoded()))).substring(0, 32) + "...");
     }
 
+    private void connectPeersAndChatrooms(HashMap<Integer, Peer> peers, HashMap<Integer, Chatroom> chatrooms) {
+        for(Map.Entry<Integer, Chatroom> entry : chatrooms.entrySet()) {
+            final Chatroom chatroom = entry.getValue();
+            final ArrayList<Integer> ids = this.databaseService.getPeerIdsFor(chatroom);
+
+            for(Integer id : ids) {
+                final Peer peer = peers.get(id);
+                peer.addChatroom(chatroom);
+                chatroom.addPeer(peer);
+            }
+        }
+    }
+
     private void userLoaded(User user) {
-        //this.printUser(user);
+        this.printUser(user);
 
         this.chatrooms = this.databaseService.getChatrooms();
+        this.peers = this.databaseService.getPeers();
+        this.connectPeersAndChatrooms(this.peers, this.chatrooms);
         this.p2pService.start();
-
-        for(Chatroom chatroom : chatrooms) {
-            chatroom.setPeers(this.databaseService.getPeersFor(chatroom));
-        }
 
         SwingUtilities.invokeLater(() -> {
             final HomeWindow view = new HomeWindow(user.getWindowSize());
@@ -171,8 +185,21 @@ public final class App implements UserServiceDelegate, SecurityServiceStaticDele
     }
 
     @Override
+    public void p2pServiceReady() {
+        this.invokeLater(() -> {
+            final int me = this.userService.getUser().getId();
+
+            for(Map.Entry<Integer, Peer> entry : peers.entrySet()) {
+                if(entry.getKey() != me) {
+                    this.p2pService.connect(entry.getValue());
+                }
+            }
+        });
+    }
+
+    @Override
     public void p2pServiceIncomingConnection() {
-        
+    
     }
 
     @Override

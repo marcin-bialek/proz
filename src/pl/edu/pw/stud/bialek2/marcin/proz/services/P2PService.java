@@ -8,11 +8,14 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 
@@ -25,6 +28,7 @@ public class P2PService extends Thread {
     private ByteBuffer buffer;
     private ByteArrayOutputStream message;
     private Set<SocketChannel> connecting;
+    private HashMap<SocketChannel, P2PSession> sessions;
 
     public P2PService(P2PServiceDelegate delegate, int port) {
         this.delegate = delegate;
@@ -33,6 +37,7 @@ public class P2PService extends Thread {
         this.buffer = ByteBuffer.allocate(128);
         this.message = new ByteArrayOutputStream();
         this.connecting = new HashSet<SocketChannel>();
+        this.sessions = new HashMap<>();
     }
 
     private void checkIfConnected() {
@@ -44,6 +49,8 @@ public class P2PService extends Thread {
                     synchronized(this.connecting) {
                         this.connecting.remove(socket);
                     }
+
+                    
                 }
             }
             catch(IOException e) {
@@ -57,7 +64,18 @@ public class P2PService extends Thread {
     }
 
     private void parseMessage(byte[] message) {
-        System.out.println("Received: \"" + new String(message) + "\"");
+        if(message.length < 8) {
+            return;
+        }
+
+        final ByteBuffer buffer = ByteBuffer.wrap(message);
+        final int type = buffer.getInt(0);
+
+        System.out.println("Message type: " + type);
+    }
+    
+    private void handleRequest(P2PSession session, byte[] payload) {
+        System.out.println("[" + session.getState().toString() + "] " + new String(payload));
     }
 
     private void handleSelectedKey(SelectionKey key) throws IOException {
@@ -65,6 +83,13 @@ public class P2PService extends Thread {
             final SocketChannel client = this.serverSocket.accept();
             client.configureBlocking(false);
             client.register(this.selector, SelectionKey.OP_READ);
+
+            final Peer peer = new Peer("", "", 0, null);
+            final P2PSession session = new P2PSession(peer, P2PSession.State.CLIENT_HELLO);
+
+            synchronized(this.sessions) {
+                this.sessions.put(client, session);
+            }
         }
 
         if(key.isReadable()) {
@@ -77,7 +102,8 @@ public class P2PService extends Thread {
             }
 
             if(this.message.size() > 0) {
-                this.parseMessage(this.message.toByteArray());
+                final P2PSession session = this.sessions.get(client);
+                this.handleRequest(session, message.toByteArray());
             }
             else {
                 client.close();
@@ -128,11 +154,21 @@ public class P2PService extends Thread {
     }
     
     public void connect(Peer peer) {
+        if(!peer.getSession().getState().equals(P2PSession.State.DISCONNECTED)) {
+            return;
+        }
+
         try {
             final SocketChannel socket = SocketChannel.open();
             socket.configureBlocking(false);
             
-            if(socket.connect(new InetSocketAddress(peer.getLastAddress(), peer.getLastPort())) == false) {
+            final P2PSession session = new P2PSession(peer, P2PSession.State.CLIENT_HELLO);
+
+            synchronized(this.sessions) {
+                this.sessions.put(socket, session);
+            }
+
+            if(!socket.connect(new InetSocketAddress(peer.getLastAddress(), peer.getLastPort()))) {
                 synchronized(this.connecting) {
                     this.connecting.add(socket);
                 }

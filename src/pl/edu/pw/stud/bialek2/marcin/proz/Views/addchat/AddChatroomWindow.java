@@ -49,6 +49,37 @@ public class AddChatroomWindow extends JFrame {
 
     private JPanel makeConnectToChatPanel() {
         final JPanel view = new JPanel();
+        view.setLayout(new GridBagLayout());
+
+        final GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.gridx = 0;
+        constraints.insets = new Insets(10, 10, 10, 10);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+
+        final JTextField uuidField = new JTextField();
+        constraints.gridy = 0;
+        constraints.gridwidth = 3;
+        view.add(uuidField, constraints);
+
+        final JTextField addressField = new JTextField();
+        constraints.gridy = 1;
+        constraints.gridwidth = 2;
+        view.add(addressField, constraints);
+
+        final JTextField portField = new JTextField();
+        constraints.gridx = 2;
+        constraints.gridwidth = 1;
+        view.add(portField, constraints);
+
+        final JButton connectButton = new JButton("Dołącz");
+        constraints.gridx = 1;
+        constraints.gridy = 2;
+        constraints.gridwidth = 1;
+        constraints.fill = GridBagConstraints.CENTER;
+        view.add(connectButton, constraints);
+
         return view;
     }
 
@@ -64,7 +95,7 @@ public class AddChatroomWindow extends JFrame {
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
         final JTextField nameField = new JTextField();
-        constraints.weighty = 1;
+        constraints.gridy = 0;
         view.add(nameField, constraints);
 
         final UUID uuid = UUID.randomUUID();

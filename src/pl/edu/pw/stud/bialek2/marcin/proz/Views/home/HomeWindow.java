@@ -10,6 +10,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
@@ -20,6 +21,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Dimension;
+import java.awt.CardLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.ActionEvent;
@@ -30,9 +32,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
+
 public class HomeWindow extends JFrame {
     private static final long serialVersionUID = -7341554873868191886L;
+    private static final String CHAT_CARD = "CHAT";
+    private static final String SETTINGS_CARD = "SETTINGS";
     private HomeWindowListener listener;
+    private JPanel centerPanel;
+    private CardLayout centerPanelLayout;
     private JPanel chatroomsWrapperPanel;
     private JPanel messagesWrapperPanel;
     private JScrollBar messagesScrollBar;
@@ -67,10 +74,11 @@ public class HomeWindow extends JFrame {
     }
 
     private void initComponents() {
-        final JPanel settingsPanel = this.makeSettingsPanel();
+        final JPanel controlPanel = this.makeControlPanel();
         final JPanel chatroomListPanel = this.makeChatroomListPanel();
         final JPanel messageListPanel = this.makeMessageListPanel();
         final JPanel messageInputPanel = this.makeMessageInputPanel();
+        final JPanel settingsPanel = this.makeSettingsPanel();
 
         final JPanel leftPanel = new JPanel();
         Dimension laftPanelDimension = leftPanel.getPreferredSize();
@@ -78,7 +86,7 @@ public class HomeWindow extends JFrame {
         leftPanel.setPreferredSize(laftPanelDimension);
         leftPanel.setBackground(App.BACKGROUND_COLOR);
         leftPanel.setLayout(new BorderLayout());
-        leftPanel.add(settingsPanel, BorderLayout.NORTH);
+        leftPanel.add(controlPanel, BorderLayout.NORTH);
         leftPanel.add(chatroomListPanel, BorderLayout.CENTER);
 
         final JPanel chatPanel = new JPanel();
@@ -86,11 +94,17 @@ public class HomeWindow extends JFrame {
         chatPanel.add(messageListPanel, BorderLayout.CENTER);
         chatPanel.add(messageInputPanel, BorderLayout.SOUTH);
 
+        this.centerPanel = new JPanel();
+        this.centerPanelLayout = new CardLayout();
+        this.centerPanel.setLayout(this.centerPanelLayout);
+        this.centerPanel.add("CHAT", chatPanel);
+        this.centerPanel.add("SETTINGS", settingsPanel);
+
         this.add(leftPanel, BorderLayout.WEST);
-        this.add(chatPanel, BorderLayout.CENTER);
+        this.add(this.centerPanel, BorderLayout.CENTER);
     }
 
-    private JPanel makeSettingsPanel() {
+    private JPanel makeControlPanel() {
         final JButton addChatroomButton = new JButton("+");
         addChatroomButton.addActionListener(new ActionListener() {
             @Override
@@ -101,11 +115,22 @@ public class HomeWindow extends JFrame {
             }    
         });
 
+        final JButton settingsButton = new JButton("*");
+        settingsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(listener != null) {
+                    listener.homeWindowDidClickSettingsButton();
+                }
+            }    
+        });
+
         final JPanel view = new JPanel();
         view.setOpaque(false);
         view.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         view.setLayout(new BorderLayout());
         view.add(addChatroomButton, BorderLayout.WEST);
+        view.add(settingsButton, BorderLayout.EAST);
         return view;
     }
 
@@ -172,6 +197,14 @@ public class HomeWindow extends JFrame {
         return view;
     }
 
+    private JPanel makeSettingsPanel() {
+        final JPanel view = new JPanel();
+        view.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        view.setLayout(new BorderLayout());
+        view.add(new JLabel("Settings"), BorderLayout.NORTH);
+        return view;
+    }
+
     public void appendChatroom(Chatroom chatroom) {
         final ChatroomRowView row = new ChatroomRowView(chatroom);
 
@@ -201,7 +234,7 @@ public class HomeWindow extends JFrame {
     }
 
     public void scrollMessagesToBottom() {
-        //this.messagesScrollBar.setValue(this.messagesScrollBar.getMaximum());
+        this.messagesScrollBar.setValue(this.messagesScrollBar.getMaximum());
     }
 
     public void appendMessageToTop(Message message) {
@@ -220,6 +253,14 @@ public class HomeWindow extends JFrame {
         this.messagesWrapperPanel.removeAll();
         this.messagesWrapperPanel.revalidate();
         this.messagesWrapperPanel.repaint();
+    }
+
+    public void showChatPanel() {
+        this.centerPanelLayout.show(this.centerPanel, CHAT_CARD);
+    }
+
+    public void showSettingsPanel() {
+        this.centerPanelLayout.show(this.centerPanel, SETTINGS_CARD);
     }
 }
 

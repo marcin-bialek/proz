@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
@@ -126,12 +127,11 @@ public class DatabaseService {
         }
     }
 
-    public ArrayList<Peer> getPeersFor(Chatroom chatroom) {
-        final ArrayList<Peer> peers = new ArrayList<>();
+    public HashMap<Integer, Peer> getPeers() {
+        final HashMap<Integer, Peer> peers = new HashMap<>();
 
         try {
-            PreparedStatement statement = this.connection.prepareStatement("SELECT peers.* FROM peers JOIN peer_chatroom ON peer_chatroom.peer_id = peers.id AND peer_chatroom.chatroom_id = ?");
-            statement.setInt(1, chatroom.getId());
+            PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM peers;");
             ResultSet result = statement.executeQuery();
 
             while(result.next()) {
@@ -140,7 +140,7 @@ public class DatabaseService {
                 final String lastAddress = result.getString(3);
                 final int lastPort = result.getInt(4);
                 final PublicKey publicKey = SecurityService.generatePublicKey(result.getBytes(5));
-                peers.add(new Peer(id, nick, lastAddress, lastPort, publicKey));
+                peers.put(id, new Peer(id, nick, lastAddress, lastPort, publicKey));
             }
         }
         catch(SQLException e) {
@@ -149,6 +149,27 @@ public class DatabaseService {
         }
 
         return peers;
+    }
+
+    public ArrayList<Integer> getPeerIdsFor(Chatroom chatroom) {
+        final ArrayList<Integer> ids = new ArrayList<>();
+
+        try {
+            PreparedStatement statement = this.connection.prepareStatement("SELECT peer_id FROM peer_chatroom WHERE chatroom_id = ?");
+            statement.setInt(1, chatroom.getId());
+            ResultSet result = statement.executeQuery();
+
+            while(result.next()) {
+                final int id = result.getInt(1);
+                ids.add(id);
+            }
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+            this.delegate.databaseServiceSQLError();
+        }
+
+        return ids;
     }
 
     public void insertChatroom(final Chatroom chatroom) {
@@ -173,8 +194,8 @@ public class DatabaseService {
         }
     }
 
-    public ArrayList<Chatroom> getChatrooms() {
-        final ArrayList<Chatroom> chatrooms = new ArrayList<>();
+    public HashMap<Integer, Chatroom> getChatrooms() {
+        final HashMap<Integer, Chatroom> chatrooms = new HashMap<>();
 
         try {
             Statement statement = this.connection.createStatement();
@@ -184,7 +205,7 @@ public class DatabaseService {
                 final int id = result.getInt(1);
                 final UUID uuid = UUID.fromString(result.getString(2));
                 final String name = result.getString(3);
-                chatrooms.add(new Chatroom(id, uuid, name));
+                chatrooms.put(id, new Chatroom(id, uuid, name));
             }
         }
         catch(SQLException e) {
@@ -251,7 +272,7 @@ public class DatabaseService {
                 final MessageType type = MessageType.fromValue(result.getInt(4));
                 final byte[] value = result.getBytes(5);
                 final LocalDateTime timestamp = result.getTimestamp(6).toLocalDateTime();
-                final Peer peer = chatroom.getPeerById(peerId); 
+                final Peer peer = chatroom.getPeer(peerId); 
 
                 if(peer == null) {
                     continue;

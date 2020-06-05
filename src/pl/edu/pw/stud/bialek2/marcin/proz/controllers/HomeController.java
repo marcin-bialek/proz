@@ -10,7 +10,9 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
 
 import java.awt.Dimension;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 
 public class HomeController implements HomeWindowListener {
@@ -19,13 +21,13 @@ public class HomeController implements HomeWindowListener {
 	private Chatroom activeChatroom;
 	private Peer sender;
 
-    public HomeController(HomeWindow view, Peer sender, ArrayList<Chatroom> chatrooms) {
+    public HomeController(HomeWindow view, Peer sender, HashMap<Integer, Chatroom> chatrooms) {
 		this.view = view;
 		this.sender = sender;
 		view.setListener(this);
 		
-		for(Chatroom chatroom : chatrooms) {
-			view.appendChatroom(chatroom);
+		for(Map.Entry<Integer, Chatroom> entry : chatrooms.entrySet()) {
+			view.appendChatroom(entry.getValue());
 		}
 	}
 	
@@ -78,15 +80,31 @@ public class HomeController implements HomeWindowListener {
 					delegate.homeControllerDidCreateChatroom(sender, chatroom);
 				}
 			}
+
+			@Override
+			public void addChatroomWindowDidAddChatroom(UUID uuid, String address, int port) {
+				if(delegate != null) {
+					addChatroomWindow.setVisible(false);
+					addChatroomWindow.dispose();
+					delegate.homeControllerDidCreateChatroom(sender, chatroom);
+				}
+			}
 		});
+	}
+
+	@Override
+	public void homeWindowDidClickSettingsButton() {
+		this.view.showSettingsPanel();
 	}
 
 	@Override
 	public void homeWindowDidChangeChatroom(Chatroom chatroom) {
 		this.activeChatroom = chatroom;
+		this.view.showChatPanel();
 
 		if(chatroom.getMessages() != null) {
 			this.displayActiveChatroomMessages();
+			this.view.scrollMessagesToBottom();
 		}
 		else if(this.delegate != null) {
 			this.delegate.homeControllerLoadMessages(this, chatroom);
@@ -102,6 +120,7 @@ public class HomeController implements HomeWindowListener {
 		final Message message = new TextMessage(this.activeChatroom, this.sender, text);
 		message.setIsSentByUser(true);
 		this.view.appendMessageToBottom(message);
+		this.view.scrollMessagesToBottom();
 		this.activeChatroom.getMessages().add(message);
 		
 		if(this.delegate != null) {
