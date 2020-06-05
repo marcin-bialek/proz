@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 
 public class NullMessage extends Message {
-    public NullMessage(int id, Chatroom chatroom, Peer peer, LocalDateTime timestamp) {
-        super(id, chatroom, peer, MessageType.NULL_MESSAGE, timestamp);
+    public NullMessage(int id, Peer peer, LocalDateTime timestamp) {
+        super(id, peer, MessageType.NULL_MESSAGE, false, timestamp);
     }
 
     @Override

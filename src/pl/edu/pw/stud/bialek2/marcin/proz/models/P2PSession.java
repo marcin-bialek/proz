@@ -1,17 +1,26 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
+import java.nio.channels.SocketChannel;
+
+import javax.crypto.SecretKey;
+
 
 public class P2PSession {
+    private SocketChannel channel;
     private Peer peer;
     private State state;
+    private SecretKey key;
 
-    public P2PSession(Peer peer, State state) {
-        this.peer = peer;
-        this.state = state;
+    public P2PSession() {
+        this.state = State.DISCONNECTED;
     }
 
-    public P2PSession(Peer peer) {
-        this(peer, State.DISCONNECTED);
+    public SocketChannel getChannel() {
+        return this.channel;
+    }
+
+    public void setPeer(Peer peer) {
+        this.peer = peer;
     }
 
     public Peer getPeer() {
@@ -22,9 +31,35 @@ public class P2PSession {
         return this.state;
     }
 
+    public SecretKey getKey() {
+        return this.key;
+    }
+
+    public void setDisconnected() {
+        this.state = State.DISCONNECTED;
+    }
+
+    public void setConnecting(SocketChannel channel, Peer peer) {
+        this.channel = channel;
+        this.peer = peer;
+        this.state = State.CONNECTING;
+    }
+
+    public void setConnecting(SocketChannel channel) {
+        this.channel = channel;
+        this.state = State.CONNECTING;
+    }
+
+    public void setConnected(SecretKey key) {
+        this.key = key;
+        this.state = State.CONNECTED;
+    }
+
     public enum State {
         DISCONNECTED,
+        CONNECTING,
         CLIENT_HELLO,
-        SERVER_HELLO
+        SERVER_HELLO,
+        CONNECTED
     }     
 }

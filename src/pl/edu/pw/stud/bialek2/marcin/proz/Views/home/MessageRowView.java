@@ -56,7 +56,7 @@ public class MessageRowView extends JPanel {
 
         RoundedView bubble = new RoundedView(15);
         
-        bubble.setBackground(this.message.getIsSentByUser() ? MESSAGE_1_COLOR : MESSAGE_2_COLOR);
+        bubble.setBackground(this.message.isIncoming() ? MESSAGE_2_COLOR : MESSAGE_1_COLOR);
 
         bubble.getSafeArea().setLayout(new BorderLayout());
         bubble.getSafeArea().add(text, BorderLayout.CENTER);
@@ -77,7 +77,7 @@ public class MessageRowView extends JPanel {
         bubbleWrapper.setLayout(new BorderLayout());
         bubbleWrapper.add(bubble, BorderLayout.CENTER);
 
-        if(!this.message.getIsSentByUser()) {
+        if(this.message.isIncoming()) {
             JLabel nick = new JLabel(this.message.getPeer().getNick());
             nick.setFont(NICK_FONT);
             nick.setForeground(Color.BLACK);
@@ -86,7 +86,7 @@ public class MessageRowView extends JPanel {
             bubbleWrapper.add(nick, BorderLayout.NORTH);
         }
 
-        this.setLayout(new FlowLayout(this.message.getIsSentByUser() ? FlowLayout.RIGHT : FlowLayout.LEFT));
+        this.setLayout(new FlowLayout(this.message.isIncoming() ? FlowLayout.LEFT : FlowLayout.RIGHT));
         this.add(bubbleWrapper);
     }
 

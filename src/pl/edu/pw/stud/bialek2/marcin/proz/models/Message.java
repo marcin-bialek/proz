@@ -5,23 +5,21 @@ import java.time.LocalDateTime;
 
 public abstract class Message {
     private int id;
-    private Chatroom chatroom;
     private Peer peer;
     private MessageType type;
     private LocalDateTime timestamp;
-    private boolean isSentByUser;
+    private boolean incoming;
 
-    public Message(int id, Chatroom chatroom, Peer peer, MessageType type, LocalDateTime timestamp) {
+    public Message(int id, Peer peer, MessageType type, boolean incoming, LocalDateTime timestamp) {
         this.id = id;
-        this.chatroom = chatroom;
         this.peer = peer;
         this.type = type;
+        this.incoming = incoming;
         this.timestamp = timestamp;
-        this.isSentByUser = false;
     }
 
-    public Message(Chatroom chatroom, Peer peer, MessageType type) {
-        this(0, chatroom, peer, type, LocalDateTime.now());
+    public Message(Peer peer, MessageType type, boolean incoming) {
+        this(0, peer, type, incoming, LocalDateTime.now());
     }
 
     public void setId(int id) {
@@ -30,10 +28,6 @@ public abstract class Message {
 
     public int getId() {
         return this.id;
-    }
-
-    public Chatroom getChatroom() {
-        return this.chatroom;
     }
 
     public Peer getPeer() {
@@ -48,12 +42,12 @@ public abstract class Message {
         return this.timestamp;
     }
 
-    public void setIsSentByUser(boolean isSentByUser) {
-        this.isSentByUser = isSentByUser;
+    public void setIncoming(boolean incoming) {
+        this.incoming = incoming;
     }
 
-    public boolean getIsSentByUser() {
-        return this.isSentByUser;
+    public boolean isIncoming() {
+        return this.incoming;
     }
 
     abstract public String getValueAsString();

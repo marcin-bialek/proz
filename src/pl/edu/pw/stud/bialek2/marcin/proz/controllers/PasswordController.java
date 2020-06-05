@@ -1,9 +1,9 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
-import java.awt.Color;
-
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindowListener;
+
+import java.awt.Color;
 
 
 public class PasswordController implements PasswordWindowListener {

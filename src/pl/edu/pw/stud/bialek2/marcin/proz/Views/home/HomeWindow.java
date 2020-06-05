@@ -1,8 +1,8 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedScrollView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
@@ -35,12 +35,13 @@ import java.util.ArrayList;
 
 public class HomeWindow extends JFrame {
     private static final long serialVersionUID = -7341554873868191886L;
+    private static final String HELLO_CARD = "HELLO";
     private static final String CHAT_CARD = "CHAT";
     private static final String SETTINGS_CARD = "SETTINGS";
     private HomeWindowListener listener;
     private JPanel centerPanel;
     private CardLayout centerPanelLayout;
-    private JPanel chatroomsWrapperPanel;
+    private JPanel peersWrapperPanel;
     private JPanel messagesWrapperPanel;
     private JScrollBar messagesScrollBar;
 
@@ -75,10 +76,11 @@ public class HomeWindow extends JFrame {
 
     private void initComponents() {
         final JPanel controlPanel = this.makeControlPanel();
-        final JPanel chatroomListPanel = this.makeChatroomListPanel();
+        final JPanel peerListPanel = this.makePeerListPanel();
         final JPanel messageListPanel = this.makeMessageListPanel();
         final JPanel messageInputPanel = this.makeMessageInputPanel();
         final JPanel settingsPanel = this.makeSettingsPanel();
+        final JPanel helloPanel = this.makeHelloPanel();
 
         final JPanel leftPanel = new JPanel();
         Dimension laftPanelDimension = leftPanel.getPreferredSize();
@@ -87,7 +89,7 @@ public class HomeWindow extends JFrame {
         leftPanel.setBackground(App.BACKGROUND_COLOR);
         leftPanel.setLayout(new BorderLayout());
         leftPanel.add(controlPanel, BorderLayout.NORTH);
-        leftPanel.add(chatroomListPanel, BorderLayout.CENTER);
+        leftPanel.add(peerListPanel, BorderLayout.CENTER);
 
         final JPanel chatPanel = new JPanel();
         chatPanel.setLayout(new BorderLayout());
@@ -97,20 +99,22 @@ public class HomeWindow extends JFrame {
         this.centerPanel = new JPanel();
         this.centerPanelLayout = new CardLayout();
         this.centerPanel.setLayout(this.centerPanelLayout);
-        this.centerPanel.add("CHAT", chatPanel);
-        this.centerPanel.add("SETTINGS", settingsPanel);
+        this.centerPanel.add(HELLO_CARD, helloPanel);
+        this.centerPanel.add(CHAT_CARD, chatPanel);
+        this.centerPanel.add(SETTINGS_CARD, settingsPanel);
+        this.centerPanelLayout.show(this.centerPanel, HELLO_CARD);
 
         this.add(leftPanel, BorderLayout.WEST);
         this.add(this.centerPanel, BorderLayout.CENTER);
     }
 
     private JPanel makeControlPanel() {
-        final JButton addChatroomButton = new JButton("+");
-        addChatroomButton.addActionListener(new ActionListener() {
+        final JButton addPeerButton = new JButton("+");
+        addPeerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {
-                    listener.homeWindowDidClickAddChatroomButton();
+                    listener.homeWindowDidClickAddPeerButton();
                 }
             }    
         });
@@ -129,17 +133,17 @@ public class HomeWindow extends JFrame {
         view.setOpaque(false);
         view.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         view.setLayout(new BorderLayout());
-        view.add(addChatroomButton, BorderLayout.WEST);
+        view.add(addPeerButton, BorderLayout.WEST);
         view.add(settingsButton, BorderLayout.EAST);
         return view;
     }
 
-    private JPanel makeChatroomListPanel() {
-        chatroomsWrapperPanel = new JPanel();
-        chatroomsWrapperPanel.setBackground(App.BACKGROUND_COLOR);;
-        chatroomsWrapperPanel.setLayout(new BoxLayout(chatroomsWrapperPanel, BoxLayout.Y_AXIS));
+    private JPanel makePeerListPanel() {
+        peersWrapperPanel = new JPanel();
+        peersWrapperPanel.setBackground(App.BACKGROUND_COLOR);;
+        peersWrapperPanel.setLayout(new BoxLayout(peersWrapperPanel, BoxLayout.Y_AXIS));
 
-        final RoundedScrollView scrollView = new RoundedScrollView(chatroomsWrapperPanel);
+        final RoundedScrollView scrollView = new RoundedScrollView(peersWrapperPanel);
         scrollView.setBackground(App.BACKGROUND_COLOR);
 
         final JPanel view = new JPanel();
@@ -197,6 +201,14 @@ public class HomeWindow extends JFrame {
         return view;
     }
 
+    private JPanel makeHelloPanel() {
+        final JPanel view = new JPanel();
+        view.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        view.setLayout(new BorderLayout());
+        view.add(new JLabel("Hello"), BorderLayout.NORTH);
+        return view;
+    }
+
     private JPanel makeSettingsPanel() {
         final JPanel view = new JPanel();
         view.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -205,8 +217,8 @@ public class HomeWindow extends JFrame {
         return view;
     }
 
-    public void appendChatroom(Chatroom chatroom) {
-        final ChatroomRowView row = new ChatroomRowView(chatroom);
+    public void appendPeer(Peer peer) {
+        final PeerRowView row = new PeerRowView(peer);
 
         row.addMouseListener(new MouseAdapter() {
             @Override
@@ -224,13 +236,13 @@ public class HomeWindow extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(listener != null) {
-                    listener.homeWindowDidChangeChatroom(chatroom);
+                    listener.homeWindowDidChangePeer(peer);
                 }
             }
         });
 
-        this.chatroomsWrapperPanel.add(row, 0);
-        this.chatroomsWrapperPanel.revalidate();
+        this.peersWrapperPanel.add(row, 0);
+        this.peersWrapperPanel.revalidate();
     }
 
     public void scrollMessagesToBottom() {

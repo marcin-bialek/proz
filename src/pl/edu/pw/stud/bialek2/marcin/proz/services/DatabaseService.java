@@ -11,14 +11,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageFactory;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
 
 
 public class DatabaseService {
@@ -26,37 +23,37 @@ public class DatabaseService {
         "CREATE TABLE IF NOT EXISTS peers (" +
         "   id              INTEGER PRIMARY KEY AUTOINCREMENT," +
         "   nick            VARCHAR NOT NULL," +
-        "   last_address    VARCHAR(15) NOT NULL," +
-        "   last_port       INT NOT NULL," +
+        "   address         VARCHAR(15) NOT NULL," +
+        "   port            INT NOT NULL," +
         "   public_key      VARBINARY(1024) NOT NULL" +
-        ");",
-
-        "CREATE TABLE IF NOT EXISTS chatrooms (" +
-        "   id              INTEGER PRIMARY KEY AUTOINCREMENT," +
-        "   uuid            VARCHAR(64) UNIQUE NOT NULL," +
-        "   name            VARCHAR NOT NULL" +
-        ");",
-
-        "CREATE TABLE IF NOT EXISTS peer_chatroom (" +
-        "   id              INTEGER PRIMARY KEY AUTOINCREMENT," +
-        "   peer_id         INTEGER REFERENCES peers(id) ON DELETE CASCADE," +
-        "   chatroom_id     INTEGER REFERENCES chatrooms(id) ON DELETE CASCADE," +
-        "   UNIQUE(peer_id, chatroom_id)" +
         ");",
 
         "CREATE TABLE IF NOT EXISTS messages (" +
         "   id              INTEGER PRIMARY KEY AUTOINCREMENT," +
-        "   chatroom_id     INTEGER REFERENCES chatrooms(id) NOT NULL," +
         "   peer_id         INTEGER REFERENCES peers(id) NOT NULL," + 
         "   type            TINYINT NOT NULL," +
         "   value           MEDIUMBLOB NOT NULL," +
+        "   incoming        BOOLEAN," +
         "   timestamp       TIMESTAMP NOT NULL" +
         ");",
     };
-    private final static String INSERT_PEER_QUERY = "INSERT INTO peers (nick, last_address, last_port, public_key) VALUES (?, ?, ?, ?);";
-    private final static String INSERT_CHATROOM_QUERY = "INSERT INTO chatrooms (uuid, name) VALUES (?, ?);";
-    private final static String INSERT_MESSAGE_QUERY = "INSERT INTO messages (chatroom_id, peer_id, type, value, timestamp) VALUES (?, ?, ?, ?, ?);";
-    private final static String INSERT_PEER_CHATROOM = "INSERT INTO peer_chatroom (peer_id, chatroom_id) VALUES (?, ?);";
+
+    private final static String INSERT_PEER_QUERY = 
+        "INSERT INTO peers (" + 
+        "   nick,           " +
+        "   address,        " + 
+        "   port,           " + 
+        "   public_key      " + 
+        ") VALUES (?, ?, ?, ?);";
+
+    private final static String INSERT_MESSAGE_QUERY = 
+        "INSERT INTO messages (" +
+        "   peer_id,           " + 
+        "   type,              " + 
+        "   value,             " + 
+        "   incoming,          " +
+        "   timestamp          " + 
+        ") VALUES (?, ?, ?, ?, ?);";
 
     private DatabaseServiceDelegate delegate;
     private Connection connection;
@@ -107,8 +104,8 @@ public class DatabaseService {
         try {
             PreparedStatement statement = this.connection.prepareStatement(INSERT_PEER_QUERY, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, peer.getNick());
-            statement.setString(2, peer.getLastAddress());
-            statement.setInt(3, peer.getLastPort());
+            statement.setString(2, peer.getAddress());
+            statement.setInt(3, peer.getPort());
             statement.setBytes(4, peer.getPublicKey().getEncoded());
             statement.execute();
 
@@ -137,10 +134,10 @@ public class DatabaseService {
             while(result.next()) {
                 final int id = result.getInt(1);
                 final String nick = result.getString(2);
-                final String lastAddress = result.getString(3);
-                final int lastPort = result.getInt(4);
+                final String address = result.getString(3);
+                final int port = result.getInt(4);
                 final PublicKey publicKey = SecurityService.generatePublicKey(result.getBytes(5));
-                peers.put(id, new Peer(id, nick, lastAddress, lastPort, publicKey));
+                peers.put(id, new Peer(id, nick, address, port, publicKey));
             }
         }
         catch(SQLException e) {
@@ -151,95 +148,13 @@ public class DatabaseService {
         return peers;
     }
 
-    public ArrayList<Integer> getPeerIdsFor(Chatroom chatroom) {
-        final ArrayList<Integer> ids = new ArrayList<>();
-
-        try {
-            PreparedStatement statement = this.connection.prepareStatement("SELECT peer_id FROM peer_chatroom WHERE chatroom_id = ?");
-            statement.setInt(1, chatroom.getId());
-            ResultSet result = statement.executeQuery();
-
-            while(result.next()) {
-                final int id = result.getInt(1);
-                ids.add(id);
-            }
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-            this.delegate.databaseServiceSQLError();
-        }
-
-        return ids;
-    }
-
-    public void insertChatroom(final Chatroom chatroom) {
-        try {
-            PreparedStatement statement = this.connection.prepareStatement(INSERT_CHATROOM_QUERY, Statement.RETURN_GENERATED_KEYS);
-            statement.setString(1, chatroom.getUuid().toString());
-            statement.setString(2, chatroom.getName());
-            statement.execute();
-
-            final ResultSet set = statement.getGeneratedKeys();
-            
-            if(set.next()) {
-                chatroom.setId(set.getInt(1));
-            }
-            else {
-                throw new SQLException("Creating chatroom failed, no id obtained.");
-            }
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-            this.delegate.databaseServiceSQLError();
-        }
-    }
-
-    public HashMap<Integer, Chatroom> getChatrooms() {
-        final HashMap<Integer, Chatroom> chatrooms = new HashMap<>();
-
-        try {
-            Statement statement = this.connection.createStatement();
-            ResultSet result = statement.executeQuery("SELECT * FROM chatrooms;");
-
-            while(result.next()) {
-                final int id = result.getInt(1);
-                final UUID uuid = UUID.fromString(result.getString(2));
-                final String name = result.getString(3);
-                chatrooms.put(id, new Chatroom(id, uuid, name));
-            }
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-            this.delegate.databaseServiceSQLError();
-        }
-
-        return chatrooms;
-    }
-
-    public void bindPeerAndChatroom(Peer peer, Chatroom chatroom) {
-        try {
-            System.out.println("bind: " + peer.getId() + " and " + chatroom.getId());
-
-            PreparedStatement statement = this.connection.prepareStatement(INSERT_PEER_CHATROOM);
-            statement.setInt(1, peer.getId());
-            statement.setInt(2, chatroom.getId());
-            statement.execute();
-
-            System.out.println("ok");
-        }
-        catch(SQLException e) {
-            e.printStackTrace();
-            this.delegate.databaseServiceSQLError();
-        }
-    }
-
     public void insertMessage(final Message message) {
         try {
             PreparedStatement statement = this.connection.prepareStatement(INSERT_MESSAGE_QUERY, Statement.RETURN_GENERATED_KEYS);
-            statement.setInt(1, message.getChatroom().getId());
-            statement.setInt(2, message.getPeer().getId()); 
-            statement.setInt(3, message.getType().getValue());
-            statement.setBytes(4, message.getValueAsBytes());
+            statement.setInt(1, message.getPeer().getId()); 
+            statement.setInt(2, message.getType().getValue());
+            statement.setBytes(3, message.getValueAsBytes());
+            statement.setBoolean(4, message.isIncoming());
             statement.setTimestamp(5, Timestamp.valueOf(message.getTimestamp()));
             statement.execute();
 
@@ -249,7 +164,7 @@ public class DatabaseService {
                 message.setId(set.getInt(1));
             }
             else {
-                throw new SQLException("Creating chatroom failed, no id obtained.");
+                throw new SQLException("Creating message failed, no id obtained.");
             }
         }
         catch(SQLException e) {
@@ -258,27 +173,21 @@ public class DatabaseService {
         }
     }
 
-    public ArrayList<Message> getMessagesFor(Chatroom chatroom) {
+    public ArrayList<Message> getMessagesFor(Peer peer) {
         final ArrayList<Message> messages = new ArrayList<>();
 
         try {
-            PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM messages WHERE chatroom_id = ?;");
-            statement.setInt(1, chatroom.getId());
+            PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM messages WHERE peer_id = ?;");
+            statement.setInt(1, peer.getId());
             ResultSet result = statement.executeQuery();
 
             while(result.next()) {
                 final int id = result.getInt(1);
-                final int peerId = result.getInt(3);
-                final MessageType type = MessageType.fromValue(result.getInt(4));
-                final byte[] value = result.getBytes(5);
+                final MessageType type = MessageType.fromValue(result.getInt(3));
+                final byte[] value = result.getBytes(4);
+                final boolean incoming = result.getBoolean(5);
                 final LocalDateTime timestamp = result.getTimestamp(6).toLocalDateTime();
-                final Peer peer = chatroom.getPeer(peerId); 
-
-                if(peer == null) {
-                    continue;
-                }
-
-                messages.add(MessageFactory.createMessage(type, id, chatroom, peer, timestamp, value));
+                messages.add(MessageFactory.createMessage(type, id, peer, incoming, timestamp, value));
             }
         }
         catch(SQLException e) {

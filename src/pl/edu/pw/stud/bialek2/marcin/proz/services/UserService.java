@@ -103,7 +103,7 @@ public class UserService {
             final SecretKey secretKey = this.user.getSecretKey();
             this.putSecureInt(DATABASE_ID_KEY, this.user.getId(), secretKey);
             this.putSecureString(NICK_KEY, this.user.getNick(), secretKey);
-            this.putSecureInt(PORT_KEY, this.user.getLastPort(), secretKey);
+            this.putSecureInt(PORT_KEY, this.user.getPort(), secretKey);
             this.putSecureInt(WINDOW_WIDTH_KEY, this.user.getWindowSize().width, secretKey);
             this.putSecureInt(WINDOW_HEIGHT_KEY, this.user.getWindowSize().height, secretKey);
             this.putSecureByteArray(PRIVATE_KEY_KEY, this.user.getPrivateKey().getEncoded(), secretKey);

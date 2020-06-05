@@ -1,7 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 import java.awt.Font;
 import java.awt.Color;
@@ -14,13 +14,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
-public class ChatroomRowView extends JPanel {
+public class PeerRowView extends JPanel {
     private static final long serialVersionUID = -1830652066555568399L;
-    private Chatroom chatroom;
+    private Peer peer;
     private JPanel content  = new JPanel();
 
-    public ChatroomRowView(Chatroom chatroom) {
-        this.chatroom = chatroom;
+    public PeerRowView(Peer peer) {
+        this.peer = peer;
 
         this.setHeight(75);
         this.setLayout(new BorderLayout());
@@ -55,13 +55,13 @@ public class ChatroomRowView extends JPanel {
         constraints.weightx = 1;
         constraints.weighty = 1;
 
-        JLabel nameLabel = new JLabel(this.chatroom.getName());
-        nameLabel.setForeground(Color.WHITE);
-        nameLabel.setFont(new Font("Verdana", Font.BOLD, 18));
+        JLabel nickLabel = new JLabel(this.peer.getNick());
+        nickLabel.setForeground(Color.WHITE);
+        nickLabel.setFont(new Font("Verdana", Font.BOLD, 18));
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.LINE_START;
-        this.content.add(nameLabel, constraints);
+        this.content.add(nickLabel, constraints);
 
         JLabel dateLabel = new JLabel("12:31");
         dateLabel.setForeground(App.ACCENT_COLOR);

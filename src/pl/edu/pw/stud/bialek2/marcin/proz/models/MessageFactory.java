@@ -6,11 +6,11 @@ import java.time.LocalDateTime;
 public class MessageFactory {
     private MessageFactory() {}
 
-    public static Message createMessage(MessageType type, int id, Chatroom chatroom, Peer peer, LocalDateTime timestamp, byte[] value) {
+    public static Message createMessage(MessageType type, int id, Peer peer, boolean incoming, LocalDateTime timestamp, byte[] value) {
         if(type == MessageType.TEXT_MESSAGE) {
-            return new TextMessage(id, chatroom, peer, timestamp, value);
+            return new TextMessage(id, peer, incoming, timestamp, value);
         }
 
-        return new NullMessage(id, chatroom, peer, timestamp);
+        return new NullMessage(id, peer, timestamp);
     }
 }

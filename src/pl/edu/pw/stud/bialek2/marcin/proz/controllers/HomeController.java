@@ -1,11 +1,10 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Chatroom;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.addchat.AddChatroomWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.addchat.AddChatroomWindowListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
 
@@ -18,16 +17,14 @@ import java.util.UUID;
 public class HomeController implements HomeWindowListener {
 	private HomeControllerDelegate delegate;
 	private HomeWindow view;
-	private Chatroom activeChatroom;
-	private Peer sender;
+	private Peer activePeer;
 
-    public HomeController(HomeWindow view, Peer sender, HashMap<Integer, Chatroom> chatrooms) {
+    public HomeController(HomeWindow view, HashMap<Integer, Peer> peers) {
 		this.view = view;
-		this.sender = sender;
 		view.setListener(this);
 		
-		for(Map.Entry<Integer, Chatroom> entry : chatrooms.entrySet()) {
-			view.appendChatroom(entry.getValue());
+		for(Map.Entry<Integer, Peer> entry : peers.entrySet()) {
+			view.appendPeer(entry.getValue());
 		}
 	}
 	
@@ -35,21 +32,17 @@ public class HomeController implements HomeWindowListener {
 		this.delegate = delegate;
 	}
 
-	private void displayActiveChatroomMessages() {
+	private void displayActivePeerMessages() {
 		this.view.clearMessages();
 
-		for(Message message : this.activeChatroom.getMessages()) {
-			if(message.getPeer().getId() == this.sender.getId()) {
-				message.setIsSentByUser(true);
-			}
-
+		for(Message message : this.activePeer.getMessages()) {
 			this.view.appendMessageToBottom(message);
 		}
 	}
 
-	public void loadedMessagesFor(Chatroom chatroom) {
-		if(chatroom == this.activeChatroom) {
-			this.displayActiveChatroomMessages();
+	public void loadedMessagesFor(Peer peer) {
+		if(peer == this.activePeer) {
+			this.displayActivePeerMessages();
 		}
 	}
 
@@ -66,27 +59,19 @@ public class HomeController implements HomeWindowListener {
 	}
 
 	@Override
-	public void homeWindowDidClickAddChatroomButton() {
-		final AddChatroomWindow addChatroomWindow = new AddChatroomWindow();
+	public void homeWindowDidClickAddPeerButton() {
+		final AddPeerWindow addPeerWindow = new AddPeerWindow();
 		final HomeController sender = this;
 	
-		addChatroomWindow.setListener(new AddChatroomWindowListener() {
+		addPeerWindow.setListener(new AddPeerWindowListener() {
 			@Override
-			public void addChatroomWindowDidCreateChatroom(Chatroom chatroom) {
-				if(delegate != null) {
-					addChatroomWindow.setVisible(false);
-					addChatroomWindow.dispose();
-					view.appendChatroom(chatroom);
-					delegate.homeControllerDidCreateChatroom(sender, chatroom);
-				}
-			}
+			public void addPeerWindowDidAddPeer(String address, int port) {
+				addPeerWindow.setVisible(false);
+				addPeerWindow.dispose();
+				final Peer peer = new Peer(null, address, port, null);
 
-			@Override
-			public void addChatroomWindowDidAddChatroom(UUID uuid, String address, int port) {
 				if(delegate != null) {
-					addChatroomWindow.setVisible(false);
-					addChatroomWindow.dispose();
-					delegate.homeControllerDidCreateChatroom(sender, chatroom);
+					delegate.homeControllerDidAddPeer(sender, peer);
 				}
 			}
 		});
@@ -98,30 +83,29 @@ public class HomeController implements HomeWindowListener {
 	}
 
 	@Override
-	public void homeWindowDidChangeChatroom(Chatroom chatroom) {
-		this.activeChatroom = chatroom;
+	public void homeWindowDidChangePeer(Peer peer) {
+		this.activePeer = peer;
 		this.view.showChatPanel();
 
-		if(chatroom.getMessages() != null) {
-			this.displayActiveChatroomMessages();
+		if(peer.getMessages() != null) {
+			this.displayActivePeerMessages();
 			this.view.scrollMessagesToBottom();
 		}
 		else if(this.delegate != null) {
-			this.delegate.homeControllerLoadMessages(this, chatroom);
+			this.delegate.homeControllerLoadMessages(this, peer);
 		}
 	}
 
 	@Override
 	public void homeWindowDidEnterMessage(String text) {
-		if(this.activeChatroom == null) {
+		if(this.activePeer == null) {
 			return;
 		}
 
-		final Message message = new TextMessage(this.activeChatroom, this.sender, text);
-		message.setIsSentByUser(true);
+		final Message message = new TextMessage(this.activePeer, true, text);
 		this.view.appendMessageToBottom(message);
 		this.view.scrollMessagesToBottom();
-		this.activeChatroom.getMessages().add(message);
+		this.activePeer.getMessages().add(message);
 		
 		if(this.delegate != null) {
 			this.delegate.homeControllerDidEnterMessage(this, message);

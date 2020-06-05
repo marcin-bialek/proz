@@ -14,6 +14,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -50,7 +51,8 @@ public class SecurityService {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             ByteBuffer buffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(input));
             return messageDigest.digest(buffer.array());
-        } catch (NoSuchAlgorithmException e) {
+        } 
+        catch(NoSuchAlgorithmException e) {
             staticDelegate.securityServiceNoSuchAlgorithm();
         }
 
@@ -133,6 +135,14 @@ public class SecurityService {
 
     public static byte[] symmetricDecrypt(final byte[] input, final SecretKey key) throws WrongPasswordException {
         return symmetricCrypto(input, key, Cipher.DECRYPT_MODE);
+    }
+
+    public static String base64Encode(final byte[] input) {
+        return Base64.getEncoder().encodeToString(input);
+    }
+
+    public static byte[] base64Decode(final String input) {
+        return Base64.getDecoder().decode(input);
     }
 
     public static byte[] encodeString(final String input) {

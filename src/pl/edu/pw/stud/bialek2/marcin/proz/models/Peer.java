@@ -1,30 +1,31 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 public class Peer {
     private int id;
     private String nick;
-    private String lastAddress;
-    private int lastPort;
+    private String address;
+    private int port;
     private PublicKey publicKey;
-    private HashMap<Integer, Chatroom> chatrooms;
+    private ArrayList<Message> messages;
     private P2PSession session;
 
-    public Peer(int id, String nick, String lastAddress, int lastPort, PublicKey publicKey) {
+    public Peer(int id, String nick, String address, int port, PublicKey publicKey) {
         this.id = id;
         this.nick = nick;
-        this.lastAddress = lastAddress;
-        this.lastPort = lastPort;
+        this.address = address;
+        this.port = port;
         this.publicKey = publicKey;
-        this.chatrooms = new HashMap<>();
-        this.session = new P2PSession(this);
+        this.messages = new ArrayList<>();
+        this.session = new P2PSession();
     }
 
-    public Peer(String nick, String lastAddress, int lastPort, PublicKey publicKey) {
-        this(0, nick, lastAddress, lastPort, publicKey);
+    public Peer(String nick, String address, int port, PublicKey publicKey) {
+        this(0, nick, address, port, publicKey);
     }
 
     public void setId(int id) {
@@ -39,24 +40,32 @@ public class Peer {
         return this.nick;
     }
 
-    public String getLastAddress() {
-        return this.lastAddress;
+    public String getAddress() {
+        return this.address;
     }
 
-    public int getLastPort() {
-        return this.lastPort;
+    public int getPort() {
+        return this.port;
     }
 
     public PublicKey getPublicKey() {
         return this.publicKey;
     }
 
-    public void addChatroom(Chatroom chatroom) {
-        this.chatrooms.put(chatroom.getId(), chatroom);
+    public void addMessage(Message message) {
+        this.messages.add(message);
     }
 
-    public HashMap<Integer, Chatroom> getChatrooms() {
-        return this.chatrooms;
+    public ArrayList<Message> getMessages() {
+        return this.messages;
+    }
+
+    public Message getLastMessage() {
+        if(this.messages.size() == 0) {
+            return new NullMessage(0, this, null);
+        }
+
+        return this.messages.get(this.messages.size() - 1);
     }
 
     public P2PSession getSession() {
