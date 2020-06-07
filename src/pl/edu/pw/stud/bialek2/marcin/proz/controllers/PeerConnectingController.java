@@ -13,6 +13,7 @@ public class PeerConnectingController implements PeerConnectingWindowListener {
 
     public PeerConnectingController(PeerConnectingWindow view, Peer peer) {
         this.view = view;
+        this.peer = peer;
         this.view.setListener(this);
 
         final String nick = peer.getNick();
@@ -23,6 +24,11 @@ public class PeerConnectingController implements PeerConnectingWindowListener {
 
     public void setDelegate(PeerConnectingControllerDelegate delegate) {
         this.delegate = delegate;
+    }
+
+    public void closeWindow() {
+        this.view.setVisible(false);
+        this.view.dispose();
     }
 
     @Override

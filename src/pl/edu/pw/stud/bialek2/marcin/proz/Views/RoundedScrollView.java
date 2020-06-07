@@ -24,7 +24,7 @@ public class RoundedScrollView extends JScrollPane {
     public RoundedScrollView(Component component) {
         super(component);
         this.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
-        this.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        this.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
         this.setBorder(null);
 
         JScrollBar verticalScrollBar = this.getVerticalScrollBar();

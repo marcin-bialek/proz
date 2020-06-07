@@ -7,13 +7,12 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Container;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 
 public class MessageRowView extends JPanel {
@@ -21,19 +20,24 @@ public class MessageRowView extends JPanel {
     private static final Color MESSAGE_1_COLOR = new Color(0, 152, 255);
     private static final Color MESSAGE_2_COLOR = new Color(50, 50, 50);
     private static final Color TEXT_COLOR = Color.WHITE;
-    private static final Font TEXT_FONT = new Font("Segoe Script", Font.PLAIN, 13);
-    private static final Font NICK_FONT = new Font("Segoe Script", Font.PLAIN, 11);
+    private static final Font TEXT_FONT = new Font("Verdana", Font.PLAIN, 13);
 
     private Message message;
+    private Container container;
 
-    public MessageRowView(Message message) {
+    public MessageRowView(Message message, Container container) {
         this.message = message;
+        this.container = container;
+        this.setLayout(new BorderLayout());
         this.setOpaque(false);
         this.initComponents();
     }
 
     private void initComponents() {
-        JTextArea text = new JTextArea();
+        final JTextPane text = new JTextPane();
+        text.setFont(TEXT_FONT);
+        text.setForeground(TEXT_COLOR);
+        text.setOpaque(false);
 
         if(this.message.getType() == MessageType.TEXT_MESSAGE) {
             text.setText(((TextMessage)this.message).getText());
@@ -42,58 +46,28 @@ public class MessageRowView extends JPanel {
             text.setText("Nieobsługiwany typ wiadomości.");
         }
 
-        text.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        text.setFont(TEXT_FONT);
-        text.setForeground(TEXT_COLOR);
-        text.setOpaque(false);
-        text.setEditable(false);
-        text.setLineWrap(true);
-        text.setWrapStyleWord(true);
-
-        // final int a = text.getFontMetrics(TEXT_FONT).stringWidth(this.message.getText());
-        // final int b = (int)text.getFontMetrics(TEXT_FONT).getStringBounds(this.message.getText(), null).getWidth() + 20;
-        // System.out.println("a: " + a + ", b: " + b);
-
         RoundedView bubble = new RoundedView(15);
-        
         bubble.setBackground(this.message.isIncoming() ? MESSAGE_2_COLOR : MESSAGE_1_COLOR);
-
         bubble.getSafeArea().setLayout(new BorderLayout());
         bubble.getSafeArea().add(text, BorderLayout.CENTER);
         bubble.getSafeArea().setOpaque(false);
+        bubble.getSafeArea().setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
+        final MessageRowView row = this;
         JPanel bubbleWrapper = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
                 final Dimension size = super.getPreferredSize();
-                final int a = 4 * this.getParent().getSize().width / 5;
-                size.width = a; //Math.min(a, b);
+                final Dimension textSize = text.getPreferredSize();
+                size.width = Math.min((row.getWidth() - 20) * 3 / 4, textSize.width + 45);
                 return size;
             }
         };
 
         bubbleWrapper.setOpaque(false);
-        bubbleWrapper.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        bubbleWrapper.setBorder(BorderFactory.createEmptyBorder(3, 10, 3, 10));
         bubbleWrapper.setLayout(new BorderLayout());
         bubbleWrapper.add(bubble, BorderLayout.CENTER);
-
-        if(this.message.isIncoming()) {
-            JLabel nick = new JLabel(this.message.getPeer().getNick());
-            nick.setFont(NICK_FONT);
-            nick.setForeground(Color.BLACK);
-            nick.setBorder(BorderFactory.createEmptyBorder(0, 0, 2, 0));
-            nick.setOpaque(false);
-            bubbleWrapper.add(nick, BorderLayout.NORTH);
-        }
-
-        this.setLayout(new FlowLayout(this.message.isIncoming() ? FlowLayout.LEFT : FlowLayout.RIGHT));
-        this.add(bubbleWrapper);
+        this.add(bubbleWrapper, this.message.isIncoming() ? BorderLayout.WEST : BorderLayout.EAST);
     }
-
-    // @Override
-    // public Dimension getMaximumSize() {
-    //     final Dimension size = super.getMaximumSize();
-    //     size.height = this.getPreferredSize().height;
-    //     return size;
-    // }
 }

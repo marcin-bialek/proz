@@ -6,10 +6,15 @@ import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PasswordControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PeerConnectingController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PeerConnectingControllerDelegate;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PortTakenController;
+import pl.edu.pw.stud.bialek2.marcin.proz.controllers.PortTakenControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupController;
 import pl.edu.pw.stud.bialek2.marcin.proz.controllers.SetupControllerDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.PeerStatus;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceDelegate;
@@ -20,6 +25,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityServiceStaticDelegate
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PeerConnectingWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
@@ -43,7 +49,8 @@ public final class App implements UserServiceDelegate,
                                   PasswordControllerDelegate, 
                                   SetupControllerDelegate, 
                                   HomeControllerDelegate, 
-                                  PeerConnectingControllerDelegate {
+                                  PeerConnectingControllerDelegate,
+                                  PortTakenControllerDelegate {
 
     public static final String APP_DISPLAY_NAME = "Chat";
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
@@ -55,15 +62,19 @@ public final class App implements UserServiceDelegate,
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
     public static final String DATABASE_FILE_NAME = "chat.db";
 
-    private final BlockingQueue<Runnable> taskQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Runnable> taskQueue;
     private final SecurityService securityService;
     private final UserService userService; 
     private final DatabaseService databaseService;
     private final P2PService p2pService;
 
-    private HashMap<Integer, Peer> peers;
+    private HomeController homeController;
+    private HashMap<String, Peer> peers;
 
     public App() {
+        this.taskQueue = new LinkedBlockingQueue<>();
+        this.peers = new HashMap<>();
+
         SecurityService.setStaticDelegate(this);
         this.securityService = new SecurityService();
         this.userService = new UserService(this);
@@ -107,29 +118,22 @@ public final class App implements UserServiceDelegate,
         }
     }
 
-    private void printUser(User user) {
-        System.out.println("Nick:        " + user.getNick());
-        System.out.println("Port:        " + user.getPort());
-        System.out.println("Width:       " + user.getWindowSize().width);
-        System.out.println("Height:      " + user.getWindowSize().height);
-        System.out.println("Secret key:  " + (new String(SecurityService.bytes2Hex(user.getSecretKey().getEncoded()))).substring(0, 32) + "...");
-        System.out.println("Private key: " + (new String(SecurityService.bytes2Hex(user.getPrivateKey().getEncoded()))).substring(0, 32) + "...");
-        System.out.println("Public key:  " + (new String(SecurityService.bytes2Hex(user.getPublicKey().getEncoded()))).substring(0, 32) + "...");
-    }
-
-    private void peersLoaded(User user, int port) {
+    private void runP2PServer(User user, int port) {
         this.p2pService.setPort(port);
         this.p2pService.setCredentials(user.getNick(), user.getPublicKey(), user.getPrivateKey());
         this.p2pService.startListening();
     }
 
-    private void userLoaded(User user) {
-        this.printUser(user);
-
+    private void loadPeersAndRunP2PServer(User user) {
         this.databaseService.load(DATABASE_FILE_NAME);
-        this.peers = this.databaseService.getPeers();
+        final ArrayList<Peer> peers = this.databaseService.getPeers();
 
-        this.peersLoaded(user, user.getPort());
+        for(Peer peer : peers) {
+            this.peers.put(peer.getPublicKeyAsString(), peer);
+            peer.getMessages().addAll(this.databaseService.getMessagesFor(peer));
+        }
+
+        this.runP2PServer(user, user.getPort());
     }
 
     @Override
@@ -157,12 +161,12 @@ public final class App implements UserServiceDelegate,
 
     @Override 
     public void userServiceDidCreateUser(User user) {
-        this.userLoaded(user);
+        this.loadPeersAndRunP2PServer(user);
     }
 
     @Override 
     public void userServiceDidLoadUser(User user) {
-        this.userLoaded(user);
+        this.loadPeersAndRunP2PServer(user);
     }
 
     @Override
@@ -177,40 +181,91 @@ public final class App implements UserServiceDelegate,
     }
 
     @Override
-    public void p2pServiceServerError() {
-        this.invokeLater(() -> {
-            System.out.println("server error, trying another port");
-            this.peersLoaded(this.userService.getUser(), 1234);
+    public void p2pServiceServerError(int port) {
+        SwingUtilities.invokeLater(() -> {
+            final PortTakenWindow view = new PortTakenWindow();
+            final PortTakenController controller = new PortTakenController(view, port);
+            controller.setDelegate(this);
         });
     }
 
     @Override
     public void p2pServiceReady() {
         this.invokeLater(() -> {
-            for(Map.Entry<Integer, Peer> entry : this.peers.entrySet()) {
+            for(Map.Entry<String, Peer> entry : this.peers.entrySet()) {
                 this.p2pService.connect(entry.getValue());
             }
 
             SwingUtilities.invokeLater(() -> {
                 final HomeWindow view = new HomeWindow(userService.getUser().getWindowSize());
-                final HomeController controller = new HomeController(view, peers);
-                controller.setDelegate(this);
+                homeController = new HomeController(view, peers);
+                homeController.setDelegate(this);
             });
         });
     }
 
     @Override
+    public void p2pServicePeerDidAccept(Peer peer) {
+        this.invokeLater(() -> {
+            if(this.peers.containsKey(peer.getPublicKeyAsString())) {
+                SwingUtilities.invokeLater(() -> {
+                    homeController.updatePeerStatus(peer, PeerStatus.ONLINE);
+                });
+            }
+            else {
+                this.databaseService.insertPeer(peer);
+
+                SwingUtilities.invokeLater(() -> {
+                    homeController.newPeer(peer);
+                    homeController.updatePeerStatus(peer, PeerStatus.ONLINE);
+                });
+            }
+        });
+    }
+
+    @Override
     public void p2pServiceIncomingConnection(Peer peer) {
-        SwingUtilities.invokeLater(() -> {
-            final PeerConnectingWindow view = new PeerConnectingWindow();
-            final PeerConnectingController controller = new PeerConnectingController(view, peer);
-            controller.setDelegate(this);
+        this.invokeLater(() -> {
+            final Peer p = this.peers.get(peer.getPublicKeyAsString());
+
+            if(p != null) {
+                if(p.getSession().getState() != P2PSession.State.CONNECTED) {
+                    this.p2pService.acceptConnection(peer);
+                    p.update(peer);
+                    peer.getSession().setPeer(p);
+                    
+                    SwingUtilities.invokeLater(() -> {
+                        homeController.updatePeerStatus(p, PeerStatus.ONLINE);
+                    });
+                }
+            }
+            else {
+                SwingUtilities.invokeLater(() -> {
+                    final PeerConnectingWindow view = new PeerConnectingWindow();
+                    final PeerConnectingController controller = new PeerConnectingController(view, peer);
+                    controller.setDelegate(this);
+                });
+            }
         });
     }
 
     @Override
     public void p2pServicePeerDisconnected(Peer peer) {
-        System.out.println("disconnected: " + peer.getAddress() + ":" + peer.getPort());
+        SwingUtilities.invokeLater(() -> {
+            homeController.updatePeerStatus(peer, PeerStatus.OFFLINE);
+        });
+    }
+
+    @Override
+    public void p2pServiceDidReceiveMessage(Message message) {
+        this.invokeLater(() -> {
+            this.databaseService.insertMessage(message);
+        });
+
+        SwingUtilities.invokeLater(() -> {
+            message.getPeer().getMessages().add(message);
+            homeController.newMessage(message);
+        });
     }
 
     @Override
@@ -231,7 +286,6 @@ public final class App implements UserServiceDelegate,
     @Override
     public void passwordControllerDidExit(PasswordController sender) {
         invokeLater(() -> { 
-            System.out.println("password window exit");
             exit(); 
         });
     }
@@ -253,6 +307,31 @@ public final class App implements UserServiceDelegate,
     }
 
     @Override
+    public void portTakenControllerDidExit(PortTakenController sender) {
+        this.invokeLater(() -> {
+            this.exit();
+        });
+    }
+
+    @Override
+    public void portTakenControllerUsePortOnce(PortTakenController sender, int port) {
+        sender.closeWindow();
+
+        this.invokeLater(() -> {
+            this.runP2PServer(this.userService.getUser(),port);
+        });
+    }
+
+    @Override
+    public void portTakenControllerUsePortAlways(PortTakenController sender, int port) {
+        sender.closeWindow();
+
+        this.invokeLater(() -> {
+            this.runP2PServer(this.userService.getUser(),port);
+        });
+    }
+
+    @Override
     public void homeControllerDidExit(HomeController sender) {
         invokeLater(() -> {
             exit();
@@ -270,30 +349,28 @@ public final class App implements UserServiceDelegate,
     public void homeControllerDidEnterMessage(HomeController sender, Message message) {
         invokeLater(() -> {
             this.databaseService.insertMessage(message);
-        });
-    }
-
-    @Override
-    public void homeControllerLoadMessages(HomeController sender, Peer peer) {
-        invokeLater(() -> {
-            peer.getMessages().addAll(this.databaseService.getMessagesFor(peer));
-
-            SwingUtilities.invokeLater(() -> {
-                sender.loadedMessagesFor(peer);
-            });
+            this.p2pService.sendMessage(message);
         });
     }
 
     @Override
     public void peerConnectingControllerDidAccept(PeerConnectingController sender, Peer peer) {
         this.invokeLater(() -> {
+            this.p2pService.acceptConnection(peer);
             this.databaseService.insertPeer(peer);
+
+            SwingUtilities.invokeLater(() -> {
+                homeController.newPeer(peer);
+                homeController.updatePeerStatus(peer, PeerStatus.ONLINE);
+            });
         });
+
+        sender.closeWindow();
     }
 
     @Override
     public void peerConnectingControllerDidReject(PeerConnectingController sender, Peer peer) {
-        
+        sender.closeWindow();
     }
 
     public static void main(String[] args) {

@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 import java.awt.Font;
@@ -16,8 +17,14 @@ import javax.swing.JPanel;
 
 public class PeerRowView extends JPanel {
     private static final long serialVersionUID = -1830652066555568399L;
+    private static final Font PLAIN_FONT = new Font("Verdana", Font.PLAIN, 12);
+    private static final Font BOLD_FONT = new Font("Verdana", Font.BOLD, 12);
+    private static final Color OFFLINE_COLOR = new Color(187, 22, 29);
+    private static final Color ONLINE_COLOR = new Color(108, 172, 78);
     private Peer peer;
     private JPanel content  = new JPanel();
+    private JLabel statusLabel;
+    private JLabel lastMessageLabel;
 
     public PeerRowView(Peer peer) {
         this.peer = peer;
@@ -63,24 +70,43 @@ public class PeerRowView extends JPanel {
         constraints.anchor = GridBagConstraints.LINE_START;
         this.content.add(nickLabel, constraints);
 
-        JLabel dateLabel = new JLabel("12:31");
-        dateLabel.setForeground(App.ACCENT_COLOR);
-        dateLabel.setFont(new Font("Verdana", Font.PLAIN, 10));
+        this.statusLabel = new JLabel("•");
+        this.statusLabel.setForeground(OFFLINE_COLOR);
+        this.statusLabel.setFont(new Font("Verdana", Font.BOLD, 16));
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.LINE_END;
-        this.content.add(dateLabel, constraints);
+        this.content.add(this.statusLabel, constraints);
 
-        //final String lastMessage = this.chatroom.getLastMessage() == null ? "" : this.chatroom.getLastMessage().getValueAsString();
-        JLabel lastMessageLabel = new JLabel("lorem ipsum");
-        lastMessageLabel.setForeground(App.ACCENT_COLOR);
-        lastMessageLabel.setFont(new Font("Verdana", Font.PLAIN, 10));
+        final String lastMessage = this.peer.getLastMessage().getValueAsString();
+        this.lastMessageLabel = new JLabel(lastMessage);
+        this.lastMessageLabel.setForeground(App.ACCENT_COLOR);
+        this.lastMessageLabel.setFont(PLAIN_FONT);
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.gridwidth = 2;
         constraints.anchor = GridBagConstraints.LINE_START;
-        this.content.add(lastMessageLabel, constraints);
+        this.content.add(this.lastMessageLabel, constraints);
 
         this.add(this.content, BorderLayout.CENTER);
     } 
+
+    public void setPeerOnline() {
+        this.statusLabel.setForeground(ONLINE_COLOR);
+        this.revalidate();
+    }
+
+    public void setPeerOffline() {
+        this.statusLabel.setForeground(OFFLINE_COLOR);
+        this.revalidate();
+    }
+
+    public void updateLastMessage(boolean bold) {
+        System.out.println("[updateLastMessage] peer: " + ((this.peer == null) ? "null" : "nie null"));
+        System.out.println("[updateLastMessage] msg: " + ((this.peer.getLastMessage() == null) ? "null" : "nie null"));
+
+        this.lastMessageLabel.setFont(bold ? BOLD_FONT : PLAIN_FONT);
+        this.lastMessageLabel.setText(this.peer.getLastMessage().getValueAsString());
+        this.revalidate();
+    }
 }

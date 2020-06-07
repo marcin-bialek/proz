@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -11,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -46,17 +48,25 @@ public class SecurityService {
         return output;
     }
 
-    public static byte[] hashSHA256(final char[] input) {
+    public static String keyToString(Key key) {
+        return new String(bytes2Hex(key.getEncoded()));
+    }
+
+    public static byte[] hashSHA256(final byte[] input) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            ByteBuffer buffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(input));
-            return messageDigest.digest(buffer.array());
+            return messageDigest.digest(input);
         } 
         catch(NoSuchAlgorithmException e) {
             staticDelegate.securityServiceNoSuchAlgorithm();
         }
 
         return null;
+    }
+
+    public static byte[] hashSHA256(final char[] input) {
+        ByteBuffer buffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(input));
+        return hashSHA256(buffer.array());
     }
 
     public static PublicKey generatePublicKey(final byte[] raw) {
@@ -108,6 +118,13 @@ public class SecurityService {
 
     public static SecretKey generateSecretKey(char[] password) {
         return generateSecretKey(hashSHA256(password));
+    }
+
+    public static SecretKey generateSecretKey() {
+        SecureRandom random = new SecureRandom();
+        final byte[] seed = new byte[256];
+        random.nextBytes(seed);
+        return generateSecretKey(hashSHA256(seed));
     }
 
     private static byte[] symmetricCrypto(final byte[] input, final SecretKey key, final int mode) throws WrongPasswordException {

@@ -16,7 +16,9 @@ import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import java.awt.Point;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -43,7 +45,7 @@ public class HomeWindow extends JFrame {
     private CardLayout centerPanelLayout;
     private JPanel peersWrapperPanel;
     private JPanel messagesWrapperPanel;
-    private JScrollBar messagesScrollBar;
+    private RoundedScrollView messagesScrollView;
 
     public HomeWindow(Dimension windowSize) {
         super(App.APP_DISPLAY_NAME);
@@ -77,6 +79,7 @@ public class HomeWindow extends JFrame {
     private void initComponents() {
         final JPanel controlPanel = this.makeControlPanel();
         final JPanel peerListPanel = this.makePeerListPanel();
+        final JPanel peerInfoPanel = this.makePeerInfoPanel();
         final JPanel messageListPanel = this.makeMessageListPanel();
         final JPanel messageInputPanel = this.makeMessageInputPanel();
         final JPanel settingsPanel = this.makeSettingsPanel();
@@ -93,6 +96,7 @@ public class HomeWindow extends JFrame {
 
         final JPanel chatPanel = new JPanel();
         chatPanel.setLayout(new BorderLayout());
+        chatPanel.add(peerInfoPanel, BorderLayout.NORTH);
         chatPanel.add(messageListPanel, BorderLayout.CENTER);
         chatPanel.add(messageInputPanel, BorderLayout.SOUTH);
 
@@ -153,23 +157,33 @@ public class HomeWindow extends JFrame {
         return view;
     }
 
+    private JPanel makePeerInfoPanel() {
+        final JLabel nickLabel = new JLabel("Elo");
+
+        final JPanel view = new JPanel();
+        view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
+        view.setLayout(new BorderLayout());
+        view.add(nickLabel, BorderLayout.CENTER);
+        return view;
+    }
+
     private JPanel makeMessageListPanel() {
         this.messagesWrapperPanel = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
                 Dimension dimension = super.getPreferredSize();
-                dimension.width = this.getParent().getSize().width;
+                dimension.width = this.getParent().getSize().width - 20;
                 return dimension;
             }
         };
 
         this.messagesWrapperPanel.setLayout(new BoxLayout(this.messagesWrapperPanel, BoxLayout.Y_AXIS));
-
-        final RoundedScrollView scrollView = new RoundedScrollView(this.messagesWrapperPanel);
-        this.messagesScrollBar = scrollView.getVerticalScrollBar();
+        final JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(messagesWrapperPanel, BorderLayout.PAGE_END);
+        this.messagesScrollView = new RoundedScrollView(wrapper);
         final JPanel view = new JPanel();
         view.setLayout(new BorderLayout());
-        view.add(scrollView, BorderLayout.CENTER);
+        view.add(this.messagesScrollView, BorderLayout.CENTER);
         return view;
     }
 
@@ -217,7 +231,7 @@ public class HomeWindow extends JFrame {
         return view;
     }
 
-    public void appendPeer(Peer peer) {
+    public PeerRowView appendPeer(Peer peer) {
         final PeerRowView row = new PeerRowView(peer);
 
         row.addMouseListener(new MouseAdapter() {
@@ -241,22 +255,34 @@ public class HomeWindow extends JFrame {
             }
         });
 
+        this.insertPeerRow(row);
+        return row;
+    }
+
+    public void insertPeerRow(PeerRowView row) {
         this.peersWrapperPanel.add(row, 0);
         this.peersWrapperPanel.revalidate();
     }
 
+    public void removePeerRow(PeerRowView row) {
+        this.peersWrapperPanel.remove(row);
+        this.peersWrapperPanel.revalidate();
+    }
+
     public void scrollMessagesToBottom() {
-        this.messagesScrollBar.setValue(this.messagesScrollBar.getMaximum());
+        JScrollBar bar = this.messagesScrollView.getVerticalScrollBar();
+        bar.setValue(bar.getMaximum());
+        bar.revalidate();
     }
 
     public void appendMessageToTop(Message message) {
-        final MessageRowView row = new MessageRowView(message);
+        final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
         this.messagesWrapperPanel.add(row, 0);
         this.messagesWrapperPanel.revalidate();
     }
 
     public void appendMessageToBottom(Message message) {
-        final MessageRowView row = new MessageRowView(message);
+        final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
         this.messagesWrapperPanel.add(row);
         this.messagesWrapperPanel.revalidate();
     }

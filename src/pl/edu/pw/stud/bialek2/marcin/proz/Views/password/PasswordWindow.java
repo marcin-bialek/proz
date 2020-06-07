@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -23,6 +25,7 @@ public class PasswordWindow extends JFrame {
     private static final long serialVersionUID = -1741907328559266181L;
     private PasswordWindowListener listener;
     private JPasswordField passwordField;
+    private JButton submitButton;
 
     public PasswordWindow() {
         super(App.APP_DISPLAY_NAME);
@@ -50,6 +53,9 @@ public class PasswordWindow extends JFrame {
     
     public void setPasswordFieldBorderColor(Color color) {
         this.passwordField.setBorder(BorderFactory.createLineBorder(color, 1));
+        submitButton.setText("Dalej");
+        submitButton.setEnabled(true);
+        this.revalidate();
     }
 
     private void initComponents() {
@@ -73,7 +79,7 @@ public class PasswordWindow extends JFrame {
         constraints.insets = new Insets(0, 10, 10, 10);
         this.add(passwordField, constraints);
 
-        JButton submiButton = new JButton("Dalej");
+        this.submitButton = new JButton("Dalej");
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.gridx = 0;
@@ -81,12 +87,28 @@ public class PasswordWindow extends JFrame {
         constraints.weightx = 1;
         constraints.weighty = 1;
         constraints.insets = new Insets(0, 10, 10, 10);
-        this.add(submiButton, constraints);
+        this.add(this.submitButton, constraints);
 
-        submiButton.addActionListener(new ActionListener() {
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent event) {
+                if(submitButton.isEnabled() && event.getKeyCode() == KeyEvent.VK_ENTER) {
+                    event.consume();
+                    submitButton.setText("Ładowanie...");
+                    submitButton.setEnabled(false);
+                    submitButton.revalidate();
+                    listener.passwordWindowDidSubmit(passwordField.getPassword());
+                }
+            }
+        });
+
+        this.submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {
+                    submitButton.setText("Ładowanie...");
+                    submitButton.setEnabled(false);
+                    submitButton.revalidate();
                     listener.passwordWindowDidSubmit(passwordField.getPassword());
                 }
             }

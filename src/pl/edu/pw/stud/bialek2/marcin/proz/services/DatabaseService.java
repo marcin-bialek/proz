@@ -124,8 +124,8 @@ public class DatabaseService {
         }
     }
 
-    public HashMap<Integer, Peer> getPeers() {
-        final HashMap<Integer, Peer> peers = new HashMap<>();
+    public ArrayList<Peer> getPeers() {
+        final ArrayList<Peer> peers = new ArrayList<>();
 
         try {
             PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM peers;");
@@ -137,7 +137,7 @@ public class DatabaseService {
                 final String address = result.getString(3);
                 final int port = result.getInt(4);
                 final PublicKey publicKey = SecurityService.generatePublicKey(result.getBytes(5));
-                peers.put(id, new Peer(id, nick, address, port, publicKey));
+                peers.add(new Peer(id, nick, address, port, publicKey));
             }
         }
         catch(SQLException e) {
