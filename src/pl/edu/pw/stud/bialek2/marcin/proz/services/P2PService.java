@@ -394,7 +394,7 @@ public class P2PService extends Thread {
     }
     
     public void connect(Peer peer) {
-        if(!peer.getSession().getState().equals(P2PSession.State.DISCONNECTED)) {
+        if(peer.getSession().getState() != P2PSession.State.DISCONNECTED) {
             return;
         }
 
@@ -424,7 +424,8 @@ public class P2PService extends Thread {
                 socket.register(this.selector, SelectionKey.OP_READ);
             }
         }
-        catch(IOException e) {
+        catch(Exception e) {
+            System.out.println("connect");
             e.printStackTrace();
         }
     }

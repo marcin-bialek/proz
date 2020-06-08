@@ -40,6 +40,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 
 public final class App implements UserServiceDelegate, 
@@ -57,10 +58,13 @@ public final class App implements UserServiceDelegate,
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
     public static final Color SECONDARY_COLOR = new Color(77, 100, 141);
     public static final Color ACCENT_COLOR = new Color(208, 225, 249);
-    public static final int DEFAULT_PORT = 8765;
+    public static final Color GREEN_COLOR = new Color(108, 172, 78);
+    public static final Color RED_COLOR = new Color(187, 22, 29);
+    public static final Color LIGHT_RED_COLOR = new Color(251, 172, 168);
+    public static final int DEFAULT_PORT = 52597;
     public static final int DEFAULT_WINDOW_WIDTH = 700;
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
-    public static final String DATABASE_FILE_NAME = "chat.db";
+    public static final String DEFAULT_DATABASE_FILE_NAME = "chat.db";
 
     private final BlockingQueue<Runnable> taskQueue;
     private final SecurityService securityService;
@@ -125,7 +129,7 @@ public final class App implements UserServiceDelegate,
     }
 
     private void loadPeersAndRunP2PServer(User user) {
-        this.databaseService.load(DATABASE_FILE_NAME);
+        this.databaseService.load(DEFAULT_DATABASE_FILE_NAME);
         final ArrayList<Peer> peers = this.databaseService.getPeers();
 
         for(Peer peer : peers) {
@@ -374,6 +378,8 @@ public final class App implements UserServiceDelegate,
     }
 
     public static void main(String[] args) {
+        UIManager.getDefaults().put("Button.disabledText", Color.WHITE);
+        
         final App app = new App();
         app.userService.loadUser(null);
         app.runTaskExecutorLoop();

@@ -1,7 +1,12 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.setup;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedPasswordFieldView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextFieldView;
 
+import java.awt.Font;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,28 +18,36 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.WindowAdapter;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JTextField;
 
 
 public class SetupWindow extends JFrame {
     private static final long serialVersionUID = 206072431562958302L;
     private SetupWindowListener listener;
-    private JButton submitButton;
+    private RoundedTextFieldView nickFieldView;
+    private RoundedPasswordFieldView passwordFieldView;
+    private RoundedTextFieldView portFieldView;
+    private RoundedTextFieldView databaseFieldView;
+    private RoundedButtonView submitButtonView;
 
     public SetupWindow() {
         super(App.APP_DISPLAY_NAME);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.setSize(new Dimension(300, 200));
+        this.setSize(new Dimension(600, 550));
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setLayout(new GridBagLayout());
         this.initComponents();
+        this.getContentPane().setBackground(App.BACKGROUND_COLOR);
         this.setVisible(true);
-
+        
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -49,75 +62,194 @@ public class SetupWindow extends JFrame {
         this.listener = listener;
     }
 
-    public void setSubmitButtonEnabled(boolean enabled) {
-        this.submitButton.setEnabled(enabled);
-    }
-
     private void initComponents() {
-        JTextArea info = new JTextArea("Aliqua nulla eu ullamco reprehenderit. Voluptate fugiat velit cupidatat sint. Fugiat ad nulla consectetur est tempor Lorem dolore culpa in nulla sunt fugiat ea. Voluptate ex laboris enim duis ut.");
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.insets = new Insets(30, 20, 15, 0);
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.anchor = GridBagConstraints.CENTER;
+
+        JTextArea info = new JTextArea("Zanim zaczniesz korzystać z chatu musisz ustawić kilka rzeczy.");
+        info.setForeground(Color.WHITE);
         info.setOpaque(false);
         info.setEditable(false);
         info.setLineWrap(true);
+        info.setFont(new Font("Verdana", Font.BOLD, 16));
         info.setWrapStyleWord(true);
-        GridBagConstraints infoConstraints = new GridBagConstraints();
-        infoConstraints.gridx = 0;
-        infoConstraints.gridy = 0;
-        infoConstraints.weightx = 1;
-        infoConstraints.weighty = 1;
-        infoConstraints.gridheight = 2;
-        infoConstraints.insets = new Insets(10, 10, 10, 10);
-        infoConstraints.fill = GridBagConstraints.HORIZONTAL;
-        this.add(info, infoConstraints);
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 2;
+        this.add(info, constraints);
 
-        JTextField nickField = new JTextField();
-        GridBagConstraints nickFieldConstraints = new GridBagConstraints();
-        nickFieldConstraints.gridx = 0;
-        nickFieldConstraints.gridy = 2;
-        nickFieldConstraints.insets = new Insets(10, 10, 10, 10);
-        nickFieldConstraints.fill = GridBagConstraints.HORIZONTAL;
-        this.add(nickField, nickFieldConstraints);
+        JLabel nickLabel = new JLabel("Nick:");
+        nickLabel.setForeground(Color.WHITE);
+        constraints.weightx = 0.1;
+        constraints.gridwidth = 1;
+        constraints.gridy = 1;
+        constraints.insets = new Insets(15, 20, 0, 20);
+        this.add(nickLabel, constraints);
 
-        JPasswordField passwordField = new JPasswordField();
-        GridBagConstraints passwordFieldConstraints = new GridBagConstraints();
-        passwordFieldConstraints.gridx = 0;
-        passwordFieldConstraints.gridy = 3;
-        passwordFieldConstraints.insets = new Insets(10, 10, 10, 10);
-        passwordFieldConstraints.fill = GridBagConstraints.HORIZONTAL;
-        this.add(passwordField, passwordFieldConstraints);
+        JLabel portLabel = new JLabel("Hasło:");
+        portLabel.setForeground(Color.WHITE);
+        constraints.gridy = 3;
+        this.add(portLabel, constraints);
 
-        this.submitButton = new JButton("Zapisz");
-        this.submitButton.setEnabled(false);
-        GridBagConstraints submitButtonConstraints = new GridBagConstraints();
-        submitButtonConstraints.gridx = 0;
-        submitButtonConstraints.gridy = 4;
-        submitButtonConstraints.insets = new Insets(10, 10, 10, 10);
-        this.add(this.submitButton, submitButtonConstraints);
+        JLabel passwordLabel = new JLabel("Port:");
+        passwordLabel.setForeground(Color.WHITE);
+        constraints.gridy = 5;
+        this.add(passwordLabel, constraints);
 
-        nickField.addKeyListener(new KeyAdapter() {
+        JLabel databaseLabel = new JLabel("Baza danych:");
+        databaseLabel.setForeground(Color.WHITE);
+        constraints.gridy = 7;
+        this.add(databaseLabel, constraints);
+
+
+        this.nickFieldView = new RoundedTextFieldView();
+        constraints.weightx = 0.9;
+        constraints.gridx = 1;
+        constraints.gridy = 1;
+        constraints.insets = new Insets(15, 0, 0, 20);
+        this.add(this.nickFieldView, constraints);
+
+        this.passwordFieldView = new RoundedPasswordFieldView();
+        constraints.gridy = 3;
+        this.add(this.passwordFieldView, constraints);
+
+        this.portFieldView = new RoundedTextFieldView();
+        this.portFieldView.getTextField().setText("" + App.DEFAULT_PORT);
+        constraints.gridy = 5;
+        this.add(this.portFieldView, constraints);
+
+        this.databaseFieldView = new RoundedTextFieldView();
+        this.databaseFieldView.getTextField().setText(App.DEFAULT_DATABASE_FILE_NAME);
+        constraints.gridy = 7;
+        this.add(this.databaseFieldView, constraints);
+
+
+        final Font panesFont = new Font("Verdana", Font.PLAIN, 9);
+
+        JTextPane nickPane = new JTextPane();
+        nickPane.setText("To Twój identyfikator, który będą widzieli Twoi znajomi. Jego zmiana będzie możliwa jedynie poprzez usunięcie danych aplikacji i ponowną instalację.");
+        nickPane.setEditable(false);
+        nickPane.setForeground(Color.WHITE);
+        nickPane.setOpaque(false);
+        nickPane.setFont(panesFont);
+        constraints.gridy = 2;
+        constraints.insets = new Insets(5, 0, 0, 20);
+        this.add(nickPane, constraints);
+
+        JTextPane passwordPane = new JTextPane();
+        passwordPane.setText("Hasło chroni Twoje ustawienia i wiadomości przed niepowołanym dostępem. Trzeba będzie je wprowadzić przy każdym uruchomieniu aplikacji. Musi składać się co najmniej z 6 znaków. Pamiętaj, że hasła nie da się odzyskać.");
+        passwordPane.setEditable(false);
+        passwordPane.setForeground(Color.WHITE);
+        passwordPane.setOpaque(false);
+        passwordPane.setFont(panesFont);
+        constraints.gridy = 4;
+        this.add(passwordPane, constraints);
+
+        JTextPane portPane = new JTextPane();
+        portPane.setText("Jest to punkt połączenia do wymiany informacji. Twoi znajomi będą musieli go podać (razem z adresem), aby się z Tobą połączyć. Możesz zostawić to ustawienie domyślne. Jeśli aplikacji wykryje, że podany port jest już używany, poprosi Cię o jego zmianę.");
+        portPane.setEditable(false);
+        portPane.setForeground(Color.WHITE);
+        portPane.setOpaque(false);
+        portPane.setFont(panesFont);
+        constraints.gridy = 6;
+        this.add(portPane, constraints);
+
+        JTextPane databasePane = new JTextPane();
+        databasePane.setText("Nazwa pliku, w którym będą zapisywani Twoi znajomi i wiadomości. Możesz zostawić to ustawienie domyślne.");
+        databasePane.setEditable(false);
+        databasePane.setForeground(Color.WHITE);
+        databasePane.setOpaque(false);
+        databasePane.setFont(panesFont);
+        constraints.gridy = 8;
+        this.add(databasePane, constraints);
+
+
+        this.submitButtonView = new RoundedButtonView("Dalej");
+        this.submitButtonView.setMinimumSize(new Dimension(270, 40));
+        this.setSubmitButtonEnabled(false);
+        constraints.gridx = 0;
+        constraints.gridy = 9;
+        constraints.gridwidth = 2;
+        constraints.insets = new Insets(30, 20, 30, 20);
+        constraints.fill = GridBagConstraints.NONE;
+        this.add(submitButtonView, constraints);
+
+        this.nickFieldView.getTextField().addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent event) {
                 if(listener != null) {
-                    listener.setupWindowDidNickChange(nickField.getText());
+                    listener.setupWindowDidNickChange(nickFieldView.getTextField().getText());
                 }
             }
         });
 
-        passwordField.addKeyListener(new KeyAdapter() {
+        this.passwordFieldView.getPasswordField().addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent event) {
                 if(listener != null) {
-                    listener.setupWindowDidPasswordChange(passwordField.getPassword());
+                    listener.setupWindowDidPasswordChange(passwordFieldView.getPasswordField().getPassword());
                 }
             }
         });
 
-        this.submitButton.addActionListener(new ActionListener() {
+        this.portFieldView.getTextField().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent event) {
+                if(listener != null) {
+                    listener.setupWindowDidPortChange(portFieldView.getTextField().getText());
+                }
+            }
+        });
+
+        this.databaseFieldView.getTextField().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent event) {
+                if(listener != null) {
+                    listener.setupWindowDidDatabaseFileChange(databaseFieldView.getTextField().getText());
+                }
+            }
+        });
+
+        this.submitButtonView.getButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {
-                    listener.setupWindowDidSubmit(nickField.getText(), passwordField.getPassword());
+                    //listener.setupWindowDidSubmit(nickField.getText(), passwordField.getPassword());
                 }
             }
         });
+    }
+
+    public void setNickFieldViewBackgroundColor(Color color) {
+        this.nickFieldView.setBackground(color);
+    }
+
+    public void setPasswordFieldViewBackgroundColor(Color color) {
+        this.passwordFieldView.setBackground(color);
+    }
+
+    public void setPortFieldViewBackgroundColor(Color color) {
+        this.portFieldView.setBackground(color);
+    }
+
+    public void setDatabaseFieldViewBackgroundColor(Color color) {
+        this.databaseFieldView.setBackground(color);
+    }
+
+    public void setSubmitButtonEnabled(boolean enabled) {
+        if(enabled) {
+            this.submitButtonView.setBackground(App.GREEN_COLOR);
+            this.submitButtonView.getButton().setEnabled(true);
+            this.submitButtonView.getButton().setForeground(Color.WHITE);
+        }
+        else {
+            this.submitButtonView.setBackground(Color.GRAY);
+            this.submitButtonView.getButton().setEnabled(false);
+            this.submitButtonView.getButton().setForeground(Color.LIGHT_GRAY);
+        }
     }
 }

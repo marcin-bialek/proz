@@ -8,4 +8,6 @@ public interface SetupWindowListener {
     public void setupWindowDidSubmit(String nick, char[] password);   
     public void setupWindowDidNickChange(String nick);
     public void setupWindowDidPasswordChange(char[] password); 
+    public void setupWindowDidPortChange(String port);
+    public void setupWindowDidDatabaseFileChange(String filename);
 }

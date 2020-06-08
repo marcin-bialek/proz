@@ -83,7 +83,6 @@ public class HomeWindow extends JFrame {
         final JPanel messageListPanel = this.makeMessageListPanel();
         final JPanel messageInputPanel = this.makeMessageInputPanel();
         final JPanel settingsPanel = this.makeSettingsPanel();
-        final JPanel helloPanel = this.makeHelloPanel();
 
         final JPanel leftPanel = new JPanel();
         Dimension laftPanelDimension = leftPanel.getPreferredSize();
@@ -103,10 +102,9 @@ public class HomeWindow extends JFrame {
         this.centerPanel = new JPanel();
         this.centerPanelLayout = new CardLayout();
         this.centerPanel.setLayout(this.centerPanelLayout);
-        this.centerPanel.add(HELLO_CARD, helloPanel);
         this.centerPanel.add(CHAT_CARD, chatPanel);
         this.centerPanel.add(SETTINGS_CARD, settingsPanel);
-        this.centerPanelLayout.show(this.centerPanel, HELLO_CARD);
+        this.centerPanelLayout.show(this.centerPanel, SETTINGS_CARD);
 
         this.add(leftPanel, BorderLayout.WEST);
         this.add(this.centerPanel, BorderLayout.CENTER);
@@ -212,14 +210,6 @@ public class HomeWindow extends JFrame {
         view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
         view.setLayout(new BorderLayout());
         view.add(textInputWrapper, BorderLayout.CENTER);
-        return view;
-    }
-
-    private JPanel makeHelloPanel() {
-        final JPanel view = new JPanel();
-        view.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        view.setLayout(new BorderLayout());
-        view.add(new JLabel("Hello"), BorderLayout.NORTH);
         return view;
     }
 

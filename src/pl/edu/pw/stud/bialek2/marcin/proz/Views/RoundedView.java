@@ -23,6 +23,7 @@ public class RoundedView extends JPanel {
         this.setOpaque(false);
         this.setLayout(new BorderLayout());
 
+        this.safeArea.setOpaque(false);
         this.content.setOpaque(false);
         this.content.setLayout(new BorderLayout());
         this.content.setBorder(BorderFactory.createEmptyBorder(cornerRadius / 2, cornerRadius / 2, cornerRadius / 2, cornerRadius / 2));

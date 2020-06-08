@@ -6,6 +6,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindowListener;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JPasswordField;
@@ -49,12 +50,24 @@ public class SetupController implements SetupWindowListener {
     @Override
     public void setupWindowDidNickChange(String nick) {
         this.isNickValid = UserService.isValidNick(nick);
+        this.view.setNickFieldViewBackgroundColor(this.isNickValid ? Color.WHITE : App.LIGHT_RED_COLOR);
         this.view.setSubmitButtonEnabled(this.isNickValid && this.isPasswordValid);
     }
 
     @Override
     public void setupWindowDidPasswordChange(char[] password) {
         this.isPasswordValid = SecurityService.isValidPassword(password);
+        this.view.setPasswordFieldViewBackgroundColor(this.isPasswordValid ? Color.WHITE : App.LIGHT_RED_COLOR);
         this.view.setSubmitButtonEnabled(this.isNickValid && this.isPasswordValid);
+    }
+
+    @Override
+    public void setupWindowDidPortChange(String port) {
+        
+    }
+
+    @Override
+    public void setupWindowDidDatabaseFileChange(String filename) {
+        
     }
 }
