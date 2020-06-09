@@ -30,26 +30,30 @@ public class SecurityService {
     private static final String SYMMETRIC_CIPHER_ALGORITHM = "AES";
     private static final String SYMMETRIC_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
     private static final String ASYMMETRIC_CIPHER_ALGORITHM = "RSA";
-    private static final String ASYMMETRIC_CIPHER_TRANSFORMATION = "AES/ECB/PKCS5Padding";
+    private static final String ASYMMETRIC_CIPHER_TRANSFORMATION = "RSA/ECB/PKCS1Padding";
     private static SecurityServiceStaticDelegate staticDelegate;
 
     public static void setStaticDelegate(SecurityServiceStaticDelegate staticDelegate) {
         SecurityService.staticDelegate = staticDelegate;
     }
 
-    public static char[] bytes2Hex(final byte[] input) {
-        final char[] output = new char[input.length * 2];
+    public static String byteArray2HexString(final byte[] input) {
+        final char[] output = new char[input.length * 3 - 1];
 
-        for (int i = 0, j = 0; i < input.length; i++, j += 2) {
+        for(int i = 0, j = 0; i < input.length; i++, j += 3) {
             output[j] = HEX_DIGITS[(input[i] >> 4) & 0xf];
             output[j + 1] = HEX_DIGITS[input[i] & 0xf];
         }
 
-        return output;
+        for(int i = 2; i < output.length; i += 3) {
+            output[i] = ':';
+        }
+
+        return new String(output);
     }
 
     public static String keyToString(Key key) {
-        return new String(bytes2Hex(key.getEncoded()));
+        return new String(byteArray2HexString(key.getEncoded()));
     }
 
     public static byte[] hashSHA256(final byte[] input) {
@@ -86,7 +90,7 @@ public class SecurityService {
 
     public static KeyPair generateKeyPair() {
         try {
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator generator = KeyPairGenerator.getInstance(ASYMMETRIC_CIPHER_ALGORITHM);
             return generator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             staticDelegate.securityServiceNoSuchAlgorithm();
@@ -127,17 +131,14 @@ public class SecurityService {
         return generateSecretKey(hashSHA256(seed));
     }
 
-    private static byte[] symmetricCrypto(final byte[] input, final SecretKey key, final int mode) throws WrongPasswordException {
+    private static byte[] doCrypto(final byte[] input, final Key key, final String transformation, final int mode) throws WrongPasswordException {
         try {
-            final Cipher cipher = Cipher.getInstance(SYMMETRIC_CIPHER_TRANSFORMATION);
+            final Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(mode, key);
             return cipher.doFinal(input);
         }
-        catch(NoSuchAlgorithmException e) {
+        catch(NoSuchAlgorithmException | NoSuchPaddingException e) {
             staticDelegate.securityServiceNoSuchAlgorithm();
-        }
-        catch(NoSuchPaddingException e) {
-            e.printStackTrace();
         }
         catch(InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
             throw new WrongPasswordException();
@@ -147,11 +148,19 @@ public class SecurityService {
     }
 
     public static byte[] symmetricEncrypt(final byte[] input, final SecretKey key) throws WrongPasswordException {
-        return symmetricCrypto(input, key, Cipher.ENCRYPT_MODE);
+        return doCrypto(input, key, SYMMETRIC_CIPHER_TRANSFORMATION, Cipher.ENCRYPT_MODE);
     }
 
     public static byte[] symmetricDecrypt(final byte[] input, final SecretKey key) throws WrongPasswordException {
-        return symmetricCrypto(input, key, Cipher.DECRYPT_MODE);
+        return doCrypto(input, key, SYMMETRIC_CIPHER_TRANSFORMATION, Cipher.DECRYPT_MODE);
+    }
+
+    public static byte[] asymmetricEncrypt(final byte[] input, final Key key) throws WrongPasswordException {
+        return doCrypto(input, key, ASYMMETRIC_CIPHER_TRANSFORMATION, Cipher.ENCRYPT_MODE);
+    }
+
+    public static byte[] asymmetricDecrypt(final byte[] input, final Key key) throws WrongPasswordException {
+        return doCrypto(input, key, ASYMMETRIC_CIPHER_TRANSFORMATION, Cipher.DECRYPT_MODE);
     }
 
     public static String base64Encode(final byte[] input) {
@@ -179,6 +188,6 @@ public class SecurityService {
     }
 
     public static boolean isValidPassword(char[] password) {
-        return password.length >= 8;
+        return password.length >= 6;
     }
 }

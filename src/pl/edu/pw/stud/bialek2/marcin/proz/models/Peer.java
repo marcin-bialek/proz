@@ -52,8 +52,16 @@ public class Peer {
         return this.nick;
     }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public String getAddress() {
         return this.address;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public int getPort() {
@@ -95,12 +103,6 @@ public class Peer {
 
     public P2PSession getSession() {
         return this.session;
-    }
-
-    public void update(Peer other) {
-        this.address = other.getAddress();
-        this.port = other.getPort();
-        this.session = other.getSession();
     }
 }
 

@@ -154,6 +154,7 @@ public class DatabaseService {
             statement.setInt(1, message.getPeer().getId()); 
             statement.setInt(2, message.getType().getValue());
             statement.setBytes(3, message.getValueAsBytes());
+            System.out.println("insert message: " + SecurityService.byteArray2HexString(message.getValueAsBytes()));
             statement.setBoolean(4, message.isIncoming());
             statement.setTimestamp(5, Timestamp.valueOf(message.getTimestamp()));
             statement.execute();
@@ -185,6 +186,7 @@ public class DatabaseService {
                 final int id = result.getInt(1);
                 final MessageType type = MessageType.fromValue(result.getInt(3));
                 final byte[] value = result.getBytes(4);
+                System.out.println("read message: " + SecurityService.byteArray2HexString(value));
                 final boolean incoming = result.getBoolean(5);
                 final LocalDateTime timestamp = result.getTimestamp(6).toLocalDateTime();
                 messages.add(MessageFactory.createMessage(type, id, peer, incoming, timestamp, value));

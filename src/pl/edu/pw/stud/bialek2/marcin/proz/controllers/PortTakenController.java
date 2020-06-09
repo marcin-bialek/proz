@@ -1,5 +1,9 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
+import java.awt.Color;
+
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindowListener;
 
@@ -25,17 +29,36 @@ public class PortTakenController implements PortTakenWindowListener {
 
     @Override
     public void portTakenWindowDidClose() {
-        
+        if(this.delegate != null) {
+            this.delegate.portTakenControllerDidExit(this);
+        }
     }
 
     @Override
     public void portTakenWindowDidPortChange(String port) {
-        
+        boolean isPortValid;
+
+        try {
+            final int portInt = Integer.parseInt(port.trim());
+            isPortValid = P2PService.isValidPort(portInt);
+        }
+        catch(NumberFormatException e) {
+            isPortValid = false;
+        }
+
+        if(isPortValid) {
+            this.view.setPortFieldBackgroundColor(Color.WHITE);
+            this.view.setButtonsEnabled(true);
+        }
+        else {
+            this.view.setPortFieldBackgroundColor(App.LIGHT_RED_COLOR);
+            this.view.setButtonsEnabled(false);
+        }
     }
 
     @Override
     public void portTakenWindowDidClickUseOnceButton(String port) {
-        final int portInt = Integer.parseInt(port);
+        final int portInt = Integer.parseInt(port.trim());
 
         if(this.delegate != null) {
             this.delegate.portTakenControllerUsePortOnce(this, portInt);
@@ -44,7 +67,7 @@ public class PortTakenController implements PortTakenWindowListener {
 
     @Override
     public void portTakenWindowDidClickUseAlwaysButton(String port) {
-        final int portInt = Integer.parseInt(port);
+        final int portInt = Integer.parseInt(port.trim());
 
         if(this.delegate != null) {
             this.delegate.portTakenControllerUsePortAlways(this, portInt);

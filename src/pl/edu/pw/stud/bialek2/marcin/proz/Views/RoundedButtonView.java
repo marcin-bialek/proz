@@ -1,5 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 
@@ -7,10 +9,12 @@ import javax.swing.JButton;
 
 
 public class RoundedButtonView extends RoundedView {
+    private Color backgroundColor;
     private JButton button;
 
     public RoundedButtonView(String text, int cornerRadius) {
         super(cornerRadius);
+        this.setBackground(App.GREEN_COLOR);
         this.getSafeArea().setLayout(new BorderLayout());
         this.button = new JButton(text);
         this.button.setContentAreaFilled(false);
@@ -26,5 +30,27 @@ public class RoundedButtonView extends RoundedView {
 
     public JButton getButton() {
         return this.button;
+    }
+
+    public void enableButton() {
+        this.setBackground(this.backgroundColor);
+        this.button.setEnabled(true);
+    }
+
+    public void disableButton() {
+        final Color bg = this.backgroundColor;
+        this.setBackground(Color.GRAY);
+        this.backgroundColor = bg;
+        this.button.setEnabled(false);
+    }
+
+    @Override
+    public void setBackground(Color color) {
+        this.backgroundColor = color;
+        super.setBackground(color);
+    }
+
+    public boolean isButtonEnabled() {
+        return this.button.isEnabled();
     }
 }

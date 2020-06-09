@@ -3,6 +3,7 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
 import java.awt.Color;
@@ -35,6 +36,7 @@ public class MessageRowView extends JPanel {
 
     private void initComponents() {
         final JTextPane text = new JTextPane();
+        text.setEditable(false);
         text.setFont(TEXT_FONT);
         text.setForeground(TEXT_COLOR);
         text.setOpaque(false);

@@ -16,6 +16,7 @@ public class UserService {
     private static final String DATABASE_ID_KEY = "database-id";
     private static final String NICK_KEY = "nick";
     private static final String PORT_KEY = "port";
+    private static final String DB_FILENAME_KEY = "db-filename";
     private static final String WINDOW_WIDTH_KEY = "window-width";
     private static final String WINDOW_HEIGHT_KEY = "window-height";
     private static final String PRIVATE_KEY_KEY = "private-key";
@@ -31,14 +32,14 @@ public class UserService {
         System.out.println(this.getClass().getName());
     }
 
-    public void createUser(final String nick, final int port, final char[] password) {
+    public void createUser(final String nick, final char[] password, final int port, final String dbFilename) {
         final SecretKey secretKey = SecurityService.generateSecretKey(password);
         final KeyPair keyPair = SecurityService.generateKeyPair();
         final PrivateKey privateKey = keyPair.getPrivate();
         final PublicKey publicKey = keyPair.getPublic();
         final Dimension windowSize = new Dimension(App.DEFAULT_WINDOW_WIDTH, App.DEFAULT_WINDOW_HEIGHT);
 
-        this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
+        this.user = new User(secretKey, privateKey, publicKey, nick, port, dbFilename, windowSize);
         this.saveUser();
         this.delegate.userServiceDidCreateUser(this.user);
     }
@@ -68,6 +69,7 @@ public class UserService {
             final int databaseId = this.getSecureInt(DATABASE_ID_KEY, -1, secretKey);
             final String nick = this.getSecureString(NICK_KEY, null, secretKey);
             final int port = this.getSecureInt(PORT_KEY, App.DEFAULT_PORT, secretKey);
+            final String dbFilename = this.getSecureString(DB_FILENAME_KEY, App.DEFAULT_DATABASE_FILE_NAME, secretKey);
             final int windowWidth = this.getSecureInt(WINDOW_WIDTH_KEY, App.DEFAULT_WINDOW_WIDTH, secretKey);
             final int windowHeight = this.getSecureInt(WINDOW_HEIGHT_KEY, App.DEFAULT_WINDOW_HEIGHT, secretKey);
             final Dimension windowSize = new Dimension(windowWidth, windowHeight);
@@ -82,7 +84,7 @@ public class UserService {
             final KeyPair keyPair = SecurityService.generateKeyPair(privateKeyRaw, publicKeyRaw);
             final PrivateKey privateKey = keyPair.getPrivate();
             final PublicKey publicKey = keyPair.getPublic();
-            this.user = new User(secretKey, privateKey, publicKey, nick, port, windowSize);
+            this.user = new User(secretKey, privateKey, publicKey, nick, port, dbFilename, windowSize);
             this.user.setId(databaseId);
             this.delegate.userServiceDidLoadUser(this.user);
         }
@@ -104,6 +106,7 @@ public class UserService {
             this.putSecureInt(DATABASE_ID_KEY, this.user.getId(), secretKey);
             this.putSecureString(NICK_KEY, this.user.getNick(), secretKey);
             this.putSecureInt(PORT_KEY, this.user.getPort(), secretKey);
+            this.putSecureString(DB_FILENAME_KEY, this.user.getDBFilename(), secretKey);
             this.putSecureInt(WINDOW_WIDTH_KEY, this.user.getWindowSize().width, secretKey);
             this.putSecureInt(WINDOW_HEIGHT_KEY, this.user.getWindowSize().height, secretKey);
             this.putSecureByteArray(PRIVATE_KEY_KEY, this.user.getPrivateKey().getEncoded(), secretKey);
@@ -114,6 +117,16 @@ public class UserService {
         }
     }
 
+    public void deleteUser() {
+        try {
+            this.preferences.removeNode();
+            this.preferences.flush();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public User getUser() {
         return this.user;
     }
@@ -121,7 +134,7 @@ public class UserService {
     public static boolean isValidNick(final String nick) {
         final String t = nick.trim();
         final int c = t.replaceAll("\\s+", "").length(); 
-        return nick.length() == t.length() && c >= 8;
+        return nick.length() == t.length() && c >= 6;
     }
 
     private void putSecureString(String key, String value, SecretKey secretKey) throws WrongPasswordException {

@@ -51,7 +51,7 @@ public class SetupWindow extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (listener != null) {
+                if(listener != null) {
                     listener.setupWindowDidClose();
                 }
             }
@@ -218,7 +218,11 @@ public class SetupWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {
-                    //listener.setupWindowDidSubmit(nickField.getText(), passwordField.getPassword());
+                    final String nick = nickFieldView.getTextField().getText();
+                    final char[] password = passwordFieldView.getPasswordField().getPassword();
+                    final String port = portFieldView.getTextField().getText();
+                    final String dbFilename = databaseFieldView.getTextField().getText();
+                    listener.setupWindowDidSubmit(nick, password, port, dbFilename);
                 }
             }
         });
@@ -240,16 +244,16 @@ public class SetupWindow extends JFrame {
         this.databaseFieldView.setBackground(color);
     }
 
+    public void setSubmitButtonText(String text) {
+        this.submitButtonView.getButton().setText(text);
+    }
+
     public void setSubmitButtonEnabled(boolean enabled) {
         if(enabled) {
-            this.submitButtonView.setBackground(App.GREEN_COLOR);
-            this.submitButtonView.getButton().setEnabled(true);
-            this.submitButtonView.getButton().setForeground(Color.WHITE);
+            this.submitButtonView.enableButton();
         }
         else {
-            this.submitButtonView.setBackground(Color.GRAY);
-            this.submitButtonView.getButton().setEnabled(false);
-            this.submitButtonView.getButton().setForeground(Color.LIGHT_GRAY);
+            this.submitButtonView.disableButton();
         }
     }
 }

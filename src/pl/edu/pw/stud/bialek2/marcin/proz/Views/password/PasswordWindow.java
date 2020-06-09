@@ -19,21 +19,24 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedPasswordFieldView;
 
 
 public class PasswordWindow extends JFrame {
     private static final long serialVersionUID = -1741907328559266181L;
     private PasswordWindowListener listener;
-    private JPasswordField passwordField;
-    private JButton submitButton;
+    private RoundedPasswordFieldView passwordFieldView;
+    private RoundedButtonView submitButtonView;
 
     public PasswordWindow() {
         super(App.APP_DISPLAY_NAME);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.setSize(new Dimension(300, 130));
+        this.setSize(new Dimension(300, 160));
         this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setLayout(new GridBagLayout());
+        this.getContentPane().setBackground(App.BACKGROUND_COLOR);
         this.initComponents();
         this.setVisible(true);
 
@@ -50,66 +53,65 @@ public class PasswordWindow extends JFrame {
     public void setListener(PasswordWindowListener listener) {
         this.listener = listener;
     }
-    
-    public void setPasswordFieldBorderColor(Color color) {
-        this.passwordField.setBorder(BorderFactory.createLineBorder(color, 1));
-        submitButton.setText("Dalej");
-        submitButton.setEnabled(true);
-        this.revalidate();
+
+    public void setPasswordFieldBackgroundColor(Color color) {
+        this.passwordFieldView.setBackground(color);
+    }
+
+    public void setSubmitButtonEnabled(boolean enabled) {
+        if(enabled) {
+            this.submitButtonView.enableButton();
+        }
+        else {
+            this.submitButtonView.disableButton();
+        }
+    }
+
+    public void setSubmitButtonText(String text) {
+        this.submitButtonView.getButton().setText(text);
     }
 
     private void initComponents() {
         GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.weightx = 1;
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.fill = GridBagConstraints.BOTH;
 
         JLabel passwordFieldLabel = new JLabel("Wprowadź hasło:");
-        constraints.anchor = GridBagConstraints.LINE_START;
-        constraints.gridx = 0;
+        passwordFieldLabel.setForeground(Color.WHITE);
         constraints.gridy = 0;
-        constraints.weightx = 1;
-        constraints.weighty = 1;
-        constraints.insets = new Insets(10, 15, 3, 10);
+        constraints.weighty = 0.5;
+        constraints.insets = new Insets(20, 20, 0, 20);
         this.add(passwordFieldLabel, constraints);
 
-        this.passwordField = new JPasswordField();
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.gridx = 0;
+        this.passwordFieldView = new RoundedPasswordFieldView();
         constraints.gridy = 1;
-        constraints.weightx = 1;
-        constraints.weighty = 1;
-        constraints.insets = new Insets(0, 10, 10, 10);
-        this.add(passwordField, constraints);
+        constraints.insets = new Insets(10, 20, 20, 20);
+        this.add(this.passwordFieldView, constraints);
 
-        this.submitButton = new JButton("Dalej");
-        constraints.anchor = GridBagConstraints.CENTER;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.gridx = 0;
+        this.submitButtonView = new RoundedButtonView("Dalej");
+        constraints.fill = GridBagConstraints.VERTICAL;
         constraints.gridy = 2;
-        constraints.weightx = 1;
-        constraints.weighty = 1;
-        constraints.insets = new Insets(0, 10, 10, 10);
-        this.add(this.submitButton, constraints);
+        constraints.weighty = 0.25;
+        constraints.insets = new Insets(0, 20, 20, 20);
+        this.add(this.submitButtonView, constraints);
 
-        passwordField.addKeyListener(new KeyAdapter() {
+        this.passwordFieldView.getPasswordField().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
-                if(submitButton.isEnabled() && event.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(submitButtonView.isButtonEnabled() && event.getKeyCode() == KeyEvent.VK_ENTER) {
                     event.consume();
-                    submitButton.setText("Ładowanie...");
-                    submitButton.setEnabled(false);
-                    submitButton.revalidate();
-                    listener.passwordWindowDidSubmit(passwordField.getPassword());
+                    listener.passwordWindowDidSubmit(passwordFieldView.getPasswordField().getPassword());
                 }
             }
         });
 
-        this.submitButton.addActionListener(new ActionListener() {
+        this.submitButtonView.getButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(listener != null) {
-                    submitButton.setText("Ładowanie...");
-                    submitButton.setEnabled(false);
-                    submitButton.revalidate();
-                    listener.passwordWindowDidSubmit(passwordField.getPassword());
+                    listener.passwordWindowDidSubmit(passwordFieldView.getPasswordField().getPassword());
                 }
             }
         });

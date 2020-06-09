@@ -32,6 +32,9 @@ public class TextMessage extends Message {
 
     @Override
     public byte[] getValueAsBytes() {
-        return StandardCharsets.UTF_8.encode(this.text).array();
+        final ByteBuffer buffer = StandardCharsets.UTF_8.encode(this.text);
+        final byte[] encoded = new byte[buffer.limit()];
+        buffer.get(encoded);
+        return encoded;
     }
 }

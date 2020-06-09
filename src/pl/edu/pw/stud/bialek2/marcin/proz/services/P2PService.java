@@ -9,7 +9,9 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -40,7 +42,6 @@ public class P2PService extends Thread {
     private int port;
     private byte[] encodedNick;
     private byte[] encodedPublicKey;
-    private PublicKey publicKey;
     private PrivateKey privateKey;
 
     public P2PService(P2PServiceDelegate delegate) {
@@ -55,10 +56,31 @@ public class P2PService extends Thread {
         this.port = port;
     }
 
+    public int getPort() {
+        try {
+            return ((InetSocketAddress)this.serverSocket.getLocalAddress()).getPort();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public String getLocalHostAddress() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        }
+        catch(UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        return "?";
+    }
+
     public void setCredentials(String nick, PublicKey publicKey, PrivateKey privateKey) {
         this.encodedNick = SecurityService.encodeString(nick);
         this.encodedPublicKey = publicKey.getEncoded();
-        this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
 
@@ -108,9 +130,9 @@ public class P2PService extends Thread {
         try {
             final SecretKey sessionKey = SecurityService.generateSecretKey();
             final byte[] encodedSessionKey = sessionKey.getEncoded();
-            //final byte[] encryptedSessionKey = SecurityService.en
+            final byte[] encryptedSessionKey = SecurityService.asymmetricEncrypt(encodedSessionKey, session.getPeer().getPublicKey());
 
-            final int size = 17 + this.encodedNick.length + this.encodedPublicKey.length + encodedSessionKey.length;
+            final int size = 21 + this.encodedNick.length + this.encodedPublicKey.length + encryptedSessionKey.length;
             final ByteBuffer payload = ByteBuffer.allocate(size);
             payload.putInt(4);
             payload.putInt(this.encodedNick.length);
@@ -118,7 +140,8 @@ public class P2PService extends Thread {
             payload.putInt(this.encodedPublicKey.length);
             payload.put(this.encodedPublicKey);
             payload.putInt(encodedSessionKey.length);
-            payload.put(encodedSessionKey);
+            payload.putInt(encryptedSessionKey.length);
+            payload.put(encryptedSessionKey);
             payload.put((byte)0);
 
             this.send(session, payload.array());
@@ -163,16 +186,19 @@ public class P2PService extends Thread {
     private void handleServerHello(P2PSession session, ByteBuffer payload) {
         try {
             final int nickSize = payload.getInt();
-            byte[] encodedNick = new byte[nickSize];
+            final byte[] encodedNick = new byte[nickSize];
             payload.get(encodedNick, 0, nickSize);
 
             final int serverKeySize = payload.getInt();
-            byte[] encodedServerKey = new byte[serverKeySize];
+            final byte[] encodedServerKey = new byte[serverKeySize];
             payload.get(encodedServerKey, 0, serverKeySize);
 
-            final int sessionKeySize = payload.getInt();
-            byte[] encodedSessionKey = new byte[sessionKeySize];
-            payload.get(encodedSessionKey, 0, sessionKeySize);
+            final int encodedSessionKeySize = payload.getInt();
+            final int encryptedSessionKeySize = payload.getInt();
+            final byte[] encryptedSessionKey = new byte[encryptedSessionKeySize];
+            payload.get(encryptedSessionKey, 0, encryptedSessionKeySize);
+            final byte[] decryptedSessionKey = SecurityService.asymmetricDecrypt(encryptedSessionKey, this.privateKey);
+            final byte[] encodedSessionKey = Arrays.copyOfRange(decryptedSessionKey, 0, encodedSessionKeySize);
 
             final String nick = SecurityService.decodeString(encodedNick);
             final PublicKey serverKey = SecurityService.generatePublicKey(encodedServerKey);
@@ -192,12 +218,13 @@ public class P2PService extends Thread {
     private void handleChatMessage(P2PSession session, ByteBuffer payload) {
         try {
             final MessageType type = MessageType.fromValue(payload.getInt());
+            final int encodedMessageSize = payload.getInt();
+            final int encryptedMessageSize = payload.getInt();
+            byte[] encryptedMessage = new byte[encryptedMessageSize];
+            payload.get(encryptedMessage, 0, encryptedMessageSize);
 
-            final int messageSize = payload.getInt();
-            byte[] encryptedMessage = new byte[messageSize];
-            payload.get(encryptedMessage, 0, messageSize);
-
-            final byte[] encodedMessage = SecurityService.symmetricDecrypt(encryptedMessage, session.getKey());
+            final byte[] decryptedMessage = SecurityService.symmetricDecrypt(encryptedMessage, session.getKey());
+            final byte[] encodedMessage = Arrays.copyOfRange(decryptedMessage, 0, encodedMessageSize);
             final Message message = MessageFactory.createMessage(type, 0, session.getPeer(), true, LocalDateTime.now(), encodedMessage);
 
             this.delegate.p2pServiceDidReceiveMessage(message);
@@ -442,10 +469,11 @@ public class P2PService extends Thread {
             try {
                 final byte[] encodedMessage = message.getValueAsBytes();
                 final byte[] encryptedMessage = SecurityService.symmetricEncrypt(encodedMessage, session.getKey());
-                final int size = 13 + encryptedMessage.length;
+                final int size = 17 + encryptedMessage.length;
                 final ByteBuffer payload = ByteBuffer.allocate(size);
                 payload.putInt(5);
                 payload.putInt(message.getType().getValue());
+                payload.putInt(encodedMessage.length);
                 payload.putInt(encryptedMessage.length);
                 payload.put(encryptedMessage);
                 payload.put((byte)0);
@@ -456,4 +484,9 @@ public class P2PService extends Thread {
             }
         }
     }
+
+    public static boolean isValidPort(int port) {
+        return port > 0 && port < 65536;
+    }
 }
+

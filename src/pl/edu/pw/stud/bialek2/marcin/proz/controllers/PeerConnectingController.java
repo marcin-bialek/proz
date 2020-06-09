@@ -18,7 +18,7 @@ public class PeerConnectingController implements PeerConnectingWindowListener {
 
         final String nick = peer.getNick();
         final String address = peer.getAddress();
-        final String publicKey = new String(SecurityService.bytes2Hex(peer.getPublicKey().getEncoded()));
+        final String publicKey = new String(SecurityService.keyToString(peer.getPublicKey()));
         this.view.updatePeerInfo(nick, address, publicKey);
     }
 

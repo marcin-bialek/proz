@@ -18,6 +18,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceDelegate;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.HttpService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
@@ -32,6 +33,11 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +45,7 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -65,6 +72,7 @@ public final class App implements UserServiceDelegate,
     public static final int DEFAULT_WINDOW_WIDTH = 700;
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
     public static final String DEFAULT_DATABASE_FILE_NAME = "chat.db";
+    public static final String MY_IP_SERVICE_URL = "http://bot.whatismyipaddress.com";
 
     private final BlockingQueue<Runnable> taskQueue;
     private final SecurityService securityService;
@@ -109,7 +117,19 @@ public final class App implements UserServiceDelegate,
         this.p2pService.stopListening();
         this.databaseService.close();
         this.userService.saveUser();
+
         System.out.println("exit");
+        System.exit(0);
+    }
+
+    public void deleteDataAndExit() {
+        this.p2pService.stopListening();
+        this.databaseService.close();
+        final File databaseFile = new File(this.userService.getUser().getDBFilename());
+        databaseFile.delete();
+        this.userService.deleteUser();
+
+        System.out.println("delete and exit");
         System.exit(0);
     }
 
@@ -129,7 +149,7 @@ public final class App implements UserServiceDelegate,
     }
 
     private void loadPeersAndRunP2PServer(User user) {
-        this.databaseService.load(DEFAULT_DATABASE_FILE_NAME);
+        this.databaseService.load(user.getDBFilename());
         final ArrayList<Peer> peers = this.databaseService.getPeers();
 
         for(Peer peer : peers) {
@@ -138,6 +158,27 @@ public final class App implements UserServiceDelegate,
         }
 
         this.runP2PServer(user, user.getPort());
+    }
+
+    private void setUserInfo(HomeController homeController) {
+        final String nick = this.userService.getUser().getNick();
+        final String localAddress = this.p2pService.getLocalHostAddress();
+        final String port = "" + this.p2pService.getPort();
+        final String publicKey = SecurityService.keyToString(this.userService.getUser().getPublicKey());
+
+        SwingUtilities.invokeLater(() -> {
+            homeController.setUserInfo(nick, localAddress, "...", port, publicKey);
+        });
+
+        HttpService.get(MY_IP_SERVICE_URL, response -> {
+            final String externalAddress = response.trim();
+
+            SwingUtilities.invokeLater(() -> {
+                homeController.setUserInfo(nick, localAddress, externalAddress, port, publicKey);
+            });
+            
+            return null;
+        });
     }
 
     @Override
@@ -204,6 +245,10 @@ public final class App implements UserServiceDelegate,
                 final HomeWindow view = new HomeWindow(userService.getUser().getWindowSize());
                 homeController = new HomeController(view, peers);
                 homeController.setDelegate(this);
+
+                this.invokeLater(() -> {
+                    this.setUserInfo(homeController);
+                });
             });
         });
     }
@@ -231,11 +276,14 @@ public final class App implements UserServiceDelegate,
     public void p2pServiceIncomingConnection(Peer peer) {
         this.invokeLater(() -> {
             final Peer p = this.peers.get(peer.getPublicKeyAsString());
+            System.out.println("connection from: " + peer.getPublicKeyAsString());
 
             if(p != null) {
                 if(p.getSession().getState() != P2PSession.State.CONNECTED) {
                     this.p2pService.acceptConnection(peer);
-                    p.update(peer);
+                    p.setSession(peer.getSession());
+                    p.setAddress(peer.getAddress());
+                    p.setPort(peer.getPort());
                     peer.getSession().setPeer(p);
                     
                     SwingUtilities.invokeLater(() -> {
@@ -262,6 +310,9 @@ public final class App implements UserServiceDelegate,
 
     @Override
     public void p2pServiceDidReceiveMessage(Message message) {
+        System.out.println("msg: \"" + message.getValueAsString() + "\"");
+        System.out.println("trm: \"" + message.getValueAsString().trim() + "\"");
+
         this.invokeLater(() -> {
             this.databaseService.insertMessage(message);
         });
@@ -280,10 +331,10 @@ public final class App implements UserServiceDelegate,
     }
 
     @Override
-    public void setupControllerDidSetup(SetupController sender, String nick, char[] password, int port) {
+    public void setupControllerDidSetup(SetupController sender, String nick, char[] password, int port, String dbFilename) {
         invokeLater(() -> {
             sender.closeWindow();
-            userService.createUser(nick, port, password);
+            userService.createUser(nick, password, port, dbFilename);
         });
     }
 
@@ -331,7 +382,9 @@ public final class App implements UserServiceDelegate,
         sender.closeWindow();
 
         this.invokeLater(() -> {
-            this.runP2PServer(this.userService.getUser(),port);
+            final User user = this.userService.getUser();
+            user.setPort(port);
+            this.runP2PServer(user, port);
         });
     }
 
@@ -339,6 +392,13 @@ public final class App implements UserServiceDelegate,
     public void homeControllerDidExit(HomeController sender) {
         invokeLater(() -> {
             exit();
+        });
+    }
+
+    @Override
+    public void homeControllerWindowDidResize(HomeController sender, Dimension windowSize) {
+        this.invokeLater(() -> {
+            this.userService.getUser().setWindowSize(windowSize);
         });
     }
 
@@ -358,10 +418,20 @@ public final class App implements UserServiceDelegate,
     }
 
     @Override
+    public void homeControllerDeleteData(HomeController sender) {
+        sender.closeWindow();
+
+        this.invokeLater(() -> {
+            this.deleteDataAndExit();
+        });
+    }
+
+    @Override
     public void peerConnectingControllerDidAccept(PeerConnectingController sender, Peer peer) {
         this.invokeLater(() -> {
             this.p2pService.acceptConnection(peer);
             this.databaseService.insertPeer(peer);
+            this.peers.put(peer.getPublicKeyAsString(), peer);
 
             SwingUtilities.invokeLater(() -> {
                 homeController.newPeer(peer);

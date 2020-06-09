@@ -1,15 +1,20 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.PeerStatus;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
+import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindowListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.home.PeerRowView;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,12 +66,19 @@ public class HomeController implements HomeWindowListener {
 	public void updatePeerStatus(Peer peer, PeerStatus status) {
 		final PeerRowView row = this.rows.get(peer.getId());
 
-		if(status == PeerStatus.OFFLINE) {
-			row.setPeerOffline();
+		if(row != null) {
+			if(status == PeerStatus.OFFLINE) {
+				row.setPeerOffline();
+			}
+			else if(status == PeerStatus.ONLINE) {
+				row.setPeerOnline();
+			}
 		}
-		else if(status == PeerStatus.ONLINE) {
-			row.setPeerOnline();
-		}
+	}
+
+	public void closeWindow() {
+		this.view.setVisible(false);
+		this.view.dispose();
 	}
 
 	private void displayActivePeerMessages() {
@@ -83,9 +95,15 @@ public class HomeController implements HomeWindowListener {
 		}
 	}
 
+	public void setUserInfo(String nick, String localAddress, String externalAddress, String port, String publicKey) {
+		this.view.setSettingsPanelInfo(nick, localAddress, externalAddress, port, publicKey);
+	}
+
 	@Override
 	public void homeWindowDidResize(Dimension windowSize) {
-
+		if(this.delegate != null) {
+			this.delegate.homeControllerWindowDidResize(this, windowSize);
+		}
 	}
 
 	@Override
@@ -101,11 +119,35 @@ public class HomeController implements HomeWindowListener {
 		final HomeController sender = this;
 	
 		addPeerWindow.setListener(new AddPeerWindowListener() {
+			private boolean isAddressValid = false;
+			private boolean isPortValid = false;
+
 			@Override
-			public void addPeerWindowDidAddPeer(String address, int port) {
+			public void addPeerWindowDidAddressChange(String address) {
+				this.isAddressValid = address.trim().length() > 0;
+				addPeerWindow.setAddressFieldBackground(this.isAddressValid ? Color.WHITE : App.LIGHT_RED_COLOR);
+				addPeerWindow.setAddButtonEnabled(this.isAddressValid && this.isPortValid);
+			}
+
+			@Override
+			public void addPeerWindowDidPortChange(String port) {
+				try {
+					final int portInt = Integer.parseInt(port.trim());
+					this.isPortValid = P2PService.isValidPort(portInt);
+				}
+				catch(NumberFormatException e) {
+					this.isPortValid = false;
+				}
+
+				addPeerWindow.setPortFieldBackground(this.isPortValid ? Color.WHITE : App.LIGHT_RED_COLOR);
+				addPeerWindow.setAddButtonEnabled(this.isAddressValid && this.isPortValid);
+			}
+
+			@Override
+			public void addPeerWindowDidAddPeer(String address, String port) {
 				addPeerWindow.setVisible(false);
 				addPeerWindow.dispose();
-				final Peer peer = new Peer(address, port);
+				final Peer peer = new Peer(address.trim(), Integer.parseInt(port.trim()));
 
 				if(delegate != null) {
 					delegate.homeControllerDidAddPeer(sender, peer);
@@ -116,7 +158,32 @@ public class HomeController implements HomeWindowListener {
 
 	@Override
 	public void homeWindowDidClickSettingsButton() {
+		this.activePeer = null;
 		this.view.showSettingsPanel();
+	}
+
+	@Override
+	public void homeWindowDidClickDeleteDataButton() {
+		final DeleteDataWindow deleteDataWindow = new DeleteDataWindow();
+		final HomeController sender = this;
+
+		deleteDataWindow.setListener(new DeleteDataWindowListener() {
+			@Override
+			public void deleteDataWindowDidConfirm() {
+				deleteDataWindow.setVisible(false);
+				deleteDataWindow.dispose();
+
+				if(delegate != null) {
+					delegate.homeControllerDeleteData(sender);
+				}
+			}
+		
+			@Override
+			public void deleteDataWindowDidCancel() {
+				deleteDataWindow.setVisible(false);
+				deleteDataWindow.dispose();
+			}
+		});
 	}
 
 	@Override
