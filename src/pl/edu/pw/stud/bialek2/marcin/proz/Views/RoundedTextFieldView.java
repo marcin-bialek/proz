@@ -16,7 +16,7 @@ public class RoundedTextFieldView extends RoundedView {
         this.getSafeArea().setLayout(new BorderLayout());
         this.textField = new JTextField();
         this.textField.setOpaque(false);
-        //this.textField.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        this.textField.setBorder(BorderFactory.createEmptyBorder(3, 7, 3, 7));
         this.getSafeArea().add(this.textField, BorderLayout.CENTER);
     }
 

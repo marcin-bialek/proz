@@ -3,6 +3,7 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.PublicKeyDialog;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedScrollView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextAreaView;
@@ -13,8 +14,10 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
@@ -61,19 +64,20 @@ public class HomeWindow extends JFrame {
     private JPanel peersWrapperPanel;
     private JPanel messagesWrapperPanel;
     private RoundedScrollView messagesScrollView;
-    private JTextArea nickValueArea;
-    private JTextArea localAddressValueArea;
-    private JTextArea externalAddressValueArea;
-    private JTextArea portValueArea;
-    private JTextArea publicKeyValueArea;
+    private JLabel nickValueLabel;
+    private JLabel localAddressValueLabel;
+    private JLabel externalAddressValueLabel;
+    private JLabel portValueLabel;
+    private JLabel publicKeyValueLabel;
     private JLabel nickLabel;
     private RoundedTextAreaView messageInputView;
+    private String fullPublicKey = "";
 
     public HomeWindow(Dimension windowSize) {
         super(App.APP_DISPLAY_NAME);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setSize(windowSize);
-        this.setMinimumSize(new Dimension(670, 460));
+        this.setMinimumSize(new Dimension(700, 470));
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout());
         this.getContentPane().setBackground(App.BACKGROUND_COLOR);
@@ -250,9 +254,9 @@ public class HomeWindow extends JFrame {
     private JPanel makeSettingsPanel() {
         final JPanel view = new JPanel(new GridBagLayout());
         final JPanel wrapper = new JPanel(new GridBagLayout()); 
-        wrapper.setMinimumSize(new Dimension(400, 400));
-        wrapper.setPreferredSize(new Dimension(400, 400));
-        wrapper.setMaximumSize(new Dimension(400, 400));
+        wrapper.setMinimumSize(new Dimension(450, 400));
+        wrapper.setPreferredSize(new Dimension(450, 400));
+        wrapper.setMaximumSize(new Dimension(450, 400));
         wrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         view.add(wrapper);
 
@@ -263,71 +267,62 @@ public class HomeWindow extends JFrame {
         constraints.gridx = 0;
 
         final JLabel nickLabel = new JLabel("Mój nick:");
+        nickLabel.setFont(App.NORMAL_FONT);
         constraints.weightx = 0.1;
         constraints.gridy = 0;
         constraints.insets = new Insets(0, 0, 0, 20);
         wrapper.add(nickLabel, constraints);
 
         final JLabel localAddressLabel = new JLabel("Mój adres lokalny:");
+        localAddressLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 1;
         constraints.insets = new Insets(20, 0, 0, 20);
         wrapper.add(localAddressLabel, constraints);
 
         final JLabel externalAddressLabel = new JLabel("Mój adres zewnętrzny:");
+        externalAddressLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 3;
         wrapper.add(externalAddressLabel, constraints);
 
         final JLabel portLabel = new JLabel("Mój port:");
+        portLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 5;
         wrapper.add(portLabel, constraints);
 
         final JLabel publicKeyLabel = new JLabel("Mój klucz publiczny:");
+        publicKeyLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 6;
         wrapper.add(publicKeyLabel, constraints);
 
-        this.nickValueArea = new JTextArea("...");
-        this.nickValueArea.setOpaque(false);
-        this.nickValueArea.setEditable(false);
-        this.nickValueArea.setLineWrap(true);
-        this.nickValueArea.setWrapStyleWord(true);
+        this.nickValueLabel = new JLabel("...");
+        this.nickValueLabel.setFont(App.NORMAL_FONT);
         constraints.weightx = 0.9;
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.insets = new Insets(0, 0, 0, 0);
-        wrapper.add(this.nickValueArea, constraints);
+        wrapper.add(this.nickValueLabel, constraints);
 
-        this.localAddressValueArea = new JTextArea("...");
-        this.localAddressValueArea.setOpaque(false);
-        this.localAddressValueArea.setEditable(false);
-        this.localAddressValueArea.setLineWrap(true);
-        this.localAddressValueArea.setWrapStyleWord(true);
+        this.localAddressValueLabel = new JLabel("...");
+        this.localAddressValueLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 1;
         constraints.insets = new Insets(20, 0, 0, 0);
-        wrapper.add(this.localAddressValueArea, constraints);
+        wrapper.add(this.localAddressValueLabel, constraints);
 
-        this.externalAddressValueArea = new JTextArea("...");
-        this.externalAddressValueArea.setOpaque(false);
-        this.externalAddressValueArea.setEditable(false);
-        this.externalAddressValueArea.setLineWrap(true);
-        this.externalAddressValueArea.setWrapStyleWord(true);
+        this.externalAddressValueLabel = new JLabel("...");
+        this.externalAddressValueLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 3;
-        wrapper.add(this.externalAddressValueArea, constraints);
+        wrapper.add(this.externalAddressValueLabel, constraints);
 
-        this.portValueArea = new JTextArea("...");
-        this.portValueArea.setOpaque(false);
-        this.portValueArea.setEditable(false);
-        this.portValueArea.setLineWrap(true);
-        this.portValueArea.setWrapStyleWord(true);
+        this.portValueLabel = new JLabel("...");
+        this.portValueLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 5;
-        wrapper.add(this.portValueArea, constraints);
+        wrapper.add(this.portValueLabel, constraints);
 
-        this.publicKeyValueArea = new JTextArea("...");
-        this.publicKeyValueArea.setOpaque(false);
-        this.publicKeyValueArea.setEditable(false);
-        this.publicKeyValueArea.setLineWrap(true);
-        this.publicKeyValueArea.setWrapStyleWord(true);
+        this.publicKeyValueLabel = new JLabel("...");
+        this.publicKeyValueLabel.setToolTipText("Kliknij, aby zobaczyć cały klucz.");
+        this.publicKeyValueLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 6;
-        wrapper.add(this.publicKeyValueArea, constraints);
+        wrapper.add(this.publicKeyValueLabel, constraints);
 
         final JTextArea localAddressArea = new JTextArea("Podaj ten adres osobom, które znajdują się w tej samej sieci lokalnej.");
         localAddressArea.setFont(App.SMALL_FONT);
@@ -358,6 +353,7 @@ public class HomeWindow extends JFrame {
         wrapper.add(publicKeyArea, constraints);
 
         final RoundedButtonView deleteDataButtonView = new RoundedButtonView("Usuń dane");
+        deleteDataButtonView.setPreferredSize(new Dimension(120, 30));
         deleteDataButtonView.setBackground(App.RED_COLOR);
         constraints.gridx = 0;
         constraints.gridy = 8;
@@ -366,6 +362,15 @@ public class HomeWindow extends JFrame {
         constraints.fill = GridBagConstraints.VERTICAL;
         constraints.insets = new Insets(40, 0, 0, 0);
         wrapper.add(deleteDataButtonView, constraints);
+
+        final HomeWindow owner = this;
+
+        this.publicKeyValueLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                new PublicKeyDialog(owner, "Mój klucz publiczny", fullPublicKey);
+            }
+        });
 
         deleteDataButtonView.getButton().addActionListener(new ActionListener() {
             @Override
@@ -453,11 +458,12 @@ public class HomeWindow extends JFrame {
     }
 
     public void setSettingsPanelInfo(String nick, String localAddress, String externalAddress, String port, String publicKey) {
-        this.nickValueArea.setText(nick);
-        this.localAddressValueArea.setText(localAddress);
-        this.externalAddressValueArea.setText(externalAddress);
-        this.portValueArea.setText(port);
-        this.publicKeyValueArea.setText(publicKey.substring(0, 56) + "...");
+        this.nickValueLabel.setText(nick);
+        this.localAddressValueLabel.setText(localAddress);
+        this.externalAddressValueLabel.setText(externalAddress);
+        this.portValueLabel.setText(port);
+        this.publicKeyValueLabel.setText(publicKey.substring(0, 29) + "...");
+        this.fullPublicKey = publicKey;
     }
 
     public void showSettingsPanel() {

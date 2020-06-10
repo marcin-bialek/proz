@@ -18,7 +18,7 @@ public class RoundedTextAreaView extends RoundedView {
         this.textArea.setOpaque(false);
         this.textArea.setLineWrap(true);
         this.textArea.setWrapStyleWord(true);
-        this.textArea.setBorder(BorderFactory.createEmptyBorder(3, 7, 3, 7));
+        //this.textArea.setBorder(BorderFactory.createEmptyBorder(3, 7, 3, 7));
         this.getSafeArea().add(this.textArea, BorderLayout.CENTER);
     }
 

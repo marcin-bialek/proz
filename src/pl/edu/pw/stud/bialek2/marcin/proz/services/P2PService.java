@@ -169,7 +169,7 @@ public class P2PService extends Thread {
             payload.get(encodedKey, 0, keySize);
             
             final String nick = SecurityService.decodeString(encodedNick);
-            final String address = ((InetSocketAddress)session.getChannel().getRemoteAddress()).getHostName();
+            final String address = ((InetSocketAddress)session.getChannel().getRemoteAddress()).getHostString();
             final PublicKey publicKey = SecurityService.generatePublicKey(encodedKey);
             final Peer peer = new Peer(nick, address, port, publicKey);
             peer.setSession(session);
@@ -240,11 +240,8 @@ public class P2PService extends Thread {
 
         try {
             final String encoded = new String(message);
-            System.out.println("received: " + encoded);
-            
             payload = ByteBuffer.wrap(SecurityService.base64Decode(encoded));
             type = payload.getInt();
-            System.out.println("message type: " + type);
         }
         catch(Exception e) {
             e.printStackTrace();

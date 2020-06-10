@@ -48,11 +48,11 @@ public class HomeController implements HomeWindowListener {
 	}
 
 	public void newMessage(Message message) {
-		System.out.println("[newMessage] message: " + message);
-		System.out.println("[newMessage] peer: " + message.getPeer());
+		// System.out.println("[newMessage] message: " + message);
+		// System.out.println("[newMessage] peer: " + message.getPeer());
 
 		final PeerRowView row = this.rows.get(message.getPeer().getId());
-		System.out.println("[newMessage] row: " + row);
+		// System.out.println("[newMessage] row: " + row);
 		this.view.removePeerRow(row);
 		this.view.insertPeerRow(row);
 

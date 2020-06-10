@@ -99,9 +99,6 @@ public class PeerRowView extends JPanel {
     }
 
     public void updateLastMessage(boolean bold) {
-        System.out.println("[updateLastMessage] peer: " + ((this.peer == null) ? "null" : "nie null"));
-        System.out.println("[updateLastMessage] msg: " + ((this.peer.getLastMessage() == null) ? "null" : "nie null"));
-
         this.lastMessageLabel.setFont(bold ? App.NORMAL_BOLD_FONT : App.NORMAL_FONT);
         this.lastMessageLabel.setText(this.peer.getLastMessage().getValueAsString());
         this.revalidate();

@@ -29,7 +29,6 @@ public class UserService {
     public UserService(UserServiceDelegate delegate) {
         this.delegate = delegate;
         this.preferences = Preferences.userRoot().node(this.getClass().getName());
-        System.out.println(this.getClass().getName());
     }
 
     public void createUser(final String nick, final char[] password, final int port, final String dbFilename) {

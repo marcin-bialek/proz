@@ -182,7 +182,7 @@ public final class App implements UserServiceDelegate,
 
         HttpService.asyncGet(MY_IP_SERVICE_URL, response -> {
             final String externalAddress = response.trim();
-            
+
             SwingUtilities.invokeLater(() -> {
                 homeController.setUserInfo(nick, localAddress, externalAddress, port, publicKey);
             });
@@ -286,7 +286,7 @@ public final class App implements UserServiceDelegate,
     public void p2pServiceIncomingConnection(Peer peer) {
         this.invokeLater(() -> {
             final Peer p = this.peers.get(peer.getPublicKeyAsString());
-            System.out.println("connection from: " + peer.getPublicKeyAsString());
+            // System.out.println("connection from: " + peer.getPublicKeyAsString());
 
             if(p != null) {
                 if(p.getSession().getState() != P2PSession.State.CONNECTED) {
@@ -320,9 +320,6 @@ public final class App implements UserServiceDelegate,
 
     @Override
     public void p2pServiceDidReceiveMessage(Message message) {
-        System.out.println("msg: \"" + message.getValueAsString() + "\"");
-        System.out.println("trm: \"" + message.getValueAsString().trim() + "\"");
-
         this.invokeLater(() -> {
             this.databaseService.insertMessage(message);
         });
