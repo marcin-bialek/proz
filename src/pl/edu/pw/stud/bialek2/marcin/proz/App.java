@@ -180,9 +180,9 @@ public final class App implements UserServiceDelegate,
             homeController.setUserInfo(nick, localAddress, "...", port, publicKey);
         });
 
-        HttpService.get(MY_IP_SERVICE_URL, response -> {
+        HttpService.asyncGet(MY_IP_SERVICE_URL, response -> {
             final String externalAddress = response.trim();
-
+            
             SwingUtilities.invokeLater(() -> {
                 homeController.setUserInfo(nick, localAddress, externalAddress, port, publicKey);
             });
