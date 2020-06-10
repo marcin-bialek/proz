@@ -5,7 +5,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedPasswordFieldView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextFieldView;
 
-import java.awt.Font;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -75,7 +74,7 @@ public class SetupWindow extends JFrame {
         info.setOpaque(false);
         info.setEditable(false);
         info.setLineWrap(true);
-        info.setFont(new Font("Verdana", Font.BOLD, 16));
+        info.setFont(App.NORMAL_BOLD_FONT);
         info.setWrapStyleWord(true);
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -127,15 +126,12 @@ public class SetupWindow extends JFrame {
         constraints.gridy = 7;
         this.add(this.databaseFieldView, constraints);
 
-
-        final Font panesFont = new Font("Verdana", Font.PLAIN, 9);
-
         JTextPane nickPane = new JTextPane();
         nickPane.setText("To Twój identyfikator, który będą widzieli Twoi znajomi. Jego zmiana będzie możliwa jedynie poprzez usunięcie danych aplikacji i ponowną instalację.");
         nickPane.setEditable(false);
         nickPane.setForeground(Color.WHITE);
         nickPane.setOpaque(false);
-        nickPane.setFont(panesFont);
+        nickPane.setFont(App.SMALL_FONT);
         constraints.gridy = 2;
         constraints.insets = new Insets(5, 0, 0, 20);
         this.add(nickPane, constraints);
@@ -145,7 +141,7 @@ public class SetupWindow extends JFrame {
         passwordPane.setEditable(false);
         passwordPane.setForeground(Color.WHITE);
         passwordPane.setOpaque(false);
-        passwordPane.setFont(panesFont);
+        passwordPane.setFont(App.SMALL_FONT);
         constraints.gridy = 4;
         this.add(passwordPane, constraints);
 
@@ -154,7 +150,7 @@ public class SetupWindow extends JFrame {
         portPane.setEditable(false);
         portPane.setForeground(Color.WHITE);
         portPane.setOpaque(false);
-        portPane.setFont(panesFont);
+        portPane.setFont(App.SMALL_FONT);
         constraints.gridy = 6;
         this.add(portPane, constraints);
 
@@ -163,7 +159,7 @@ public class SetupWindow extends JFrame {
         databasePane.setEditable(false);
         databasePane.setForeground(Color.WHITE);
         databasePane.setOpaque(false);
-        databasePane.setFont(panesFont);
+        databasePane.setFont(App.SMALL_FONT);
         constraints.gridy = 8;
         this.add(databasePane, constraints);
 

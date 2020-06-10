@@ -5,6 +5,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedScrollView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextAreaView;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
 import javax.imageio.ImageIO;
@@ -19,8 +20,8 @@ import javax.swing.JScrollBar;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -50,6 +51,8 @@ public class HomeWindow extends JFrame {
     private static final long serialVersionUID = -7341554873868191886L;
     private static final String CHAT_CARD = "CHAT";
     private static final String SETTINGS_CARD = "SETTINGS";
+    private static final Color LIGHT_GREY_1 = new Color(230, 230, 230);
+
     private static BufferedImage addImage;
     private static BufferedImage gearImage;
     private HomeWindowListener listener;
@@ -63,6 +66,8 @@ public class HomeWindow extends JFrame {
     private JTextArea externalAddressValueArea;
     private JTextArea portValueArea;
     private JTextArea publicKeyValueArea;
+    private JLabel nickLabel;
+    private RoundedTextAreaView messageInputView;
 
     public HomeWindow(Dimension windowSize) {
         super(App.APP_DISPLAY_NAME);
@@ -188,12 +193,14 @@ public class HomeWindow extends JFrame {
     }
 
     private JPanel makePeerInfoPanel() {
-        final JLabel nickLabel = new JLabel("Elo");
+        this.nickLabel = new JLabel("");
+        this.nickLabel.setFont(App.BIG_FONT);
 
         final JPanel view = new JPanel();
+        view.setBackground(LIGHT_GREY_1);
         view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
         view.setLayout(new BorderLayout());
-        view.add(nickLabel, BorderLayout.CENTER);
+        view.add(this.nickLabel, BorderLayout.CENTER);
         return view;
     }
 
@@ -218,30 +225,25 @@ public class HomeWindow extends JFrame {
     }
 
     private JPanel makeMessageInputPanel() {
-        final JTextArea textInput = new JTextArea();
-        textInput.setLineWrap(true);
+        this.messageInputView = new RoundedTextAreaView();
 
-        textInput.addKeyListener(new KeyAdapter() {
+        this.messageInputView.getTextArea().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
                 if(event.getKeyCode() == KeyEvent.VK_ENTER) {
                     event.consume();
-                    final String text = textInput.getText();
-                    textInput.setText("");
+                    final String text = messageInputView.getTextArea().getText();
+                    messageInputView.getTextArea().setText("");
                     listener.homeWindowDidEnterMessage(text);
                 }
             }
         });
-    
-        final RoundedView textInputWrapper = new RoundedView(15);
-        textInputWrapper.setBackground(Color.WHITE);
-        textInputWrapper.getSafeArea().setLayout(new BorderLayout());
-        textInputWrapper.getSafeArea().add(textInput, BorderLayout.CENTER);
 
         final JPanel view = new JPanel();
+        view.setBackground(LIGHT_GREY_1);
         view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
         view.setLayout(new BorderLayout());
-        view.add(textInputWrapper, BorderLayout.CENTER);
+        view.add(this.messageInputView, BorderLayout.CENTER);
         return view;
     }
 
@@ -327,10 +329,8 @@ public class HomeWindow extends JFrame {
         constraints.gridy = 6;
         wrapper.add(this.publicKeyValueArea, constraints);
 
-        final Font SMALL_FONT = new Font("Verdana", Font.PLAIN, 9);
-
         final JTextArea localAddressArea = new JTextArea("Podaj ten adres osobom, które znajdują się w tej samej sieci lokalnej.");
-        localAddressArea.setFont(SMALL_FONT);
+        localAddressArea.setFont(App.SMALL_FONT);
         localAddressArea.setOpaque(false);
         localAddressArea.setEditable(false);
         localAddressArea.setLineWrap(true);
@@ -339,8 +339,8 @@ public class HomeWindow extends JFrame {
         constraints.insets = new Insets(3, 0, 0, 0);
         wrapper.add(localAddressArea, constraints);
 
-        final JTextArea externalAddressArea = new JTextArea("Podaj ten adres osobom, które chcę połączyć się z Tobą przez internet. Aby się to udało, może być konieczne odpowiednie skonfigurowanie routera.");
-        externalAddressArea.setFont(SMALL_FONT);
+        final JTextArea externalAddressArea = new JTextArea("Podaj ten adres osobom, które chcą połączyć się z Tobą przez internet. Aby się to udało, może być konieczne odpowiednie skonfigurowanie routera.");
+        externalAddressArea.setFont(App.SMALL_FONT);
         externalAddressArea.setOpaque(false);
         externalAddressArea.setEditable(false);
         externalAddressArea.setLineWrap(true);
@@ -349,7 +349,7 @@ public class HomeWindow extends JFrame {
         wrapper.add(externalAddressArea, constraints);
 
         final JTextArea publicKeyArea = new JTextArea("Każda osoba przyjmująca od Ciebie połączenie zobaczy ten ciąg. Dzięki niemu będzie mogła zweryfikować Twoją tożsamość.");
-        publicKeyArea.setFont(SMALL_FONT);
+        publicKeyArea.setFont(App.SMALL_FONT);
         publicKeyArea.setOpaque(false);
         publicKeyArea.setEditable(false);
         publicKeyArea.setLineWrap(true);
@@ -418,9 +418,11 @@ public class HomeWindow extends JFrame {
     }
 
     public void scrollMessagesToBottom() {
-        JScrollBar bar = this.messagesScrollView.getVerticalScrollBar();
-        bar.setValue(bar.getMaximum());
-        bar.revalidate();
+        final Rectangle b = this.messagesWrapperPanel.getBounds();
+        final Rectangle v = this.messagesScrollView.getViewport().getViewRect();
+        final Rectangle r = new Rectangle(v.x, b.height - v.height, v.width, v.height);
+        this.messagesScrollView.getViewport().scrollRectToVisible(r);
+        this.messagesScrollView.revalidate();
     }
 
     public void appendMessageToTop(Message message) {
@@ -435,6 +437,10 @@ public class HomeWindow extends JFrame {
         this.messagesWrapperPanel.revalidate();
     }
 
+    public void setNick(String nick) {
+        this.nickLabel.setText(nick);
+    } 
+
     public void clearMessages() {
         this.messagesWrapperPanel.removeAll();
         this.messagesWrapperPanel.revalidate();
@@ -443,6 +449,7 @@ public class HomeWindow extends JFrame {
 
     public void showChatPanel() {
         this.centerPanelLayout.show(this.centerPanel, CHAT_CARD);
+        this.messageInputView.getTextArea().grabFocus();
     }
 
     public void setSettingsPanelInfo(String nick, String localAddress, String externalAddress, String port, String publicKey) {
@@ -455,6 +462,23 @@ public class HomeWindow extends JFrame {
 
     public void showSettingsPanel() {
         this.centerPanelLayout.show(this.centerPanel, SETTINGS_CARD);
+    }
+
+    public void setMessageInputEnabled(boolean enabled) {
+        if(enabled) {
+            this.messageInputView.getTextArea().setEditable(true);
+            this.messageInputView.getTextArea().setFont(App.NORMAL_FONT);
+            this.messageInputView.getTextArea().setForeground(Color.DARK_GRAY);
+            this.messageInputView.getTextArea().getCaret().setVisible(true);
+            this.messageInputView.getTextArea().setText("");
+        }
+        else {
+            this.messageInputView.getTextArea().setEditable(false);
+            this.messageInputView.getTextArea().setFont(App.NORMAL_ITALIC_FONT);
+            this.messageInputView.getTextArea().setForeground(Color.GRAY);
+            this.messageInputView.getTextArea().getCaret().setVisible(false);
+            this.messageInputView.getTextArea().setText("Użytkownik jest offline");
+        }
     }
 
     static {

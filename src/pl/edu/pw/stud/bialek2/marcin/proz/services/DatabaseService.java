@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.crypto.SecretKey;
+
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageFactory;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
@@ -57,18 +59,20 @@ public class DatabaseService {
 
     private DatabaseServiceDelegate delegate;
     private Connection connection;
+    private SecretKey secretKey;
     
     public DatabaseService(DatabaseServiceDelegate delegate) {
         this.delegate = delegate;
     }
 
-    public void load(String path) {
+    public void load(String path, SecretKey secretKey) {
         try {
             if(this.connection != null) {
                 this.connection.close();
             }
 
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + path);
+            this.secretKey = secretKey;
             this.initTables();
         } 
         catch (SQLException e) {
@@ -150,11 +154,13 @@ public class DatabaseService {
 
     public void insertMessage(final Message message) {
         try {
+            final byte[] encodedMessage = message.getValueAsBytes();
+            final byte[] encryptedMessage = SecurityService.symmetricEncrypt(encodedMessage, this.secretKey);
+
             PreparedStatement statement = this.connection.prepareStatement(INSERT_MESSAGE_QUERY, Statement.RETURN_GENERATED_KEYS);
             statement.setInt(1, message.getPeer().getId()); 
             statement.setInt(2, message.getType().getValue());
-            statement.setBytes(3, message.getValueAsBytes());
-            System.out.println("insert message: " + SecurityService.byteArray2HexString(message.getValueAsBytes()));
+            statement.setBytes(3, encryptedMessage);
             statement.setBoolean(4, message.isIncoming());
             statement.setTimestamp(5, Timestamp.valueOf(message.getTimestamp()));
             statement.execute();
@@ -172,6 +178,9 @@ public class DatabaseService {
             e.printStackTrace();
             this.delegate.databaseServiceSQLError();
         }
+        catch(WrongPasswordException e) {
+            e.printStackTrace();
+        }
     }
 
     public ArrayList<Message> getMessagesFor(Peer peer) {
@@ -185,16 +194,20 @@ public class DatabaseService {
             while(result.next()) {
                 final int id = result.getInt(1);
                 final MessageType type = MessageType.fromValue(result.getInt(3));
-                final byte[] value = result.getBytes(4);
-                System.out.println("read message: " + SecurityService.byteArray2HexString(value));
+                final byte[] encryptedMessage = result.getBytes(4);
+                final byte[] encodedMessage = SecurityService.symmetricDecrypt(encryptedMessage, this.secretKey);
                 final boolean incoming = result.getBoolean(5);
                 final LocalDateTime timestamp = result.getTimestamp(6).toLocalDateTime();
-                messages.add(MessageFactory.createMessage(type, id, peer, incoming, timestamp, value));
+
+                messages.add(MessageFactory.createMessage(type, id, peer, incoming, timestamp, encodedMessage));
             }
         }
         catch(SQLException e) {
             e.printStackTrace();
             this.delegate.databaseServiceSQLError();
+        }
+        catch(WrongPasswordException e) {
+            e.printStackTrace();
         }
 
         return messages;

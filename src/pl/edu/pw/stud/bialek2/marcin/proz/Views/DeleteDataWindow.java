@@ -19,8 +19,8 @@ public class DeleteDataWindow extends JFrame {
     public DeleteDataWindow() {
         super(App.APP_DISPLAY_NAME);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.setSize(new Dimension(300, 160));
-        // this.setResizable(false);
+        this.setSize(new Dimension(300, 180));
+        this.setResizable(false);
         this.setLocationRelativeTo(null);
         this.setLayout(new GridBagLayout());
         this.getContentPane().setBackground(App.BACKGROUND_COLOR);
@@ -35,7 +35,6 @@ public class DeleteDataWindow extends JFrame {
     private void initComponents() {
         final GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1;
-        constraints.weighty = 1;
         constraints.insets = new Insets(20, 20, 20, 20);
 
         final JTextArea infoArea = new JTextArea("Czy na pewno chcesz usunąć wszystkie dane wraz z wiadomościami?");
@@ -47,6 +46,7 @@ public class DeleteDataWindow extends JFrame {
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.gridwidth = 2;
+        constraints.weighty = 0.7;
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.CENTER;
         this.add(infoArea, constraints);
@@ -54,6 +54,7 @@ public class DeleteDataWindow extends JFrame {
         final RoundedButtonView cancelButtonView = new RoundedButtonView("Nie");
         constraints.gridy = 1;
         constraints.gridwidth = 1;
+        constraints.weighty = 0.3;
         constraints.fill = GridBagConstraints.VERTICAL;
         this.add(cancelButtonView, constraints);
 

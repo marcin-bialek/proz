@@ -1,5 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views.home;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
@@ -20,8 +21,6 @@ public class MessageRowView extends JPanel {
     private static final long serialVersionUID = 2205687909573788708L;
     private static final Color MESSAGE_1_COLOR = new Color(0, 152, 255);
     private static final Color MESSAGE_2_COLOR = new Color(50, 50, 50);
-    private static final Color TEXT_COLOR = Color.WHITE;
-    private static final Font TEXT_FONT = new Font("Verdana", Font.PLAIN, 13);
 
     private Message message;
     private Container container;
@@ -37,8 +36,8 @@ public class MessageRowView extends JPanel {
     private void initComponents() {
         final JTextPane text = new JTextPane();
         text.setEditable(false);
-        text.setFont(TEXT_FONT);
-        text.setForeground(TEXT_COLOR);
+        text.setFont(App.NORMAL_FONT);
+        text.setForeground(Color.WHITE);
         text.setOpaque(false);
 
         if(this.message.getType() == MessageType.TEXT_MESSAGE) {

@@ -17,10 +17,7 @@ import javax.swing.JPanel;
 
 public class PeerRowView extends JPanel {
     private static final long serialVersionUID = -1830652066555568399L;
-    private static final Font PLAIN_FONT = new Font("Verdana", Font.PLAIN, 12);
-    private static final Font BOLD_FONT = new Font("Verdana", Font.BOLD, 12);
-    private static final Color OFFLINE_COLOR = new Color(187, 22, 29);
-    private static final Color ONLINE_COLOR = new Color(108, 172, 78);
+
     private Peer peer;
     private JPanel content  = new JPanel();
     private JLabel statusLabel;
@@ -64,15 +61,15 @@ public class PeerRowView extends JPanel {
 
         JLabel nickLabel = new JLabel(this.peer.getNick());
         nickLabel.setForeground(Color.WHITE);
-        nickLabel.setFont(new Font("Verdana", Font.BOLD, 18));
+        nickLabel.setFont(App.BIG_BOLD_FONT);
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.LINE_START;
         this.content.add(nickLabel, constraints);
 
         this.statusLabel = new JLabel("•");
-        this.statusLabel.setForeground(OFFLINE_COLOR);
-        this.statusLabel.setFont(new Font("Verdana", Font.BOLD, 16));
+        this.statusLabel.setForeground(App.RED_COLOR);
+        this.statusLabel.setFont(App.BIG_BOLD_FONT);
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.LINE_END;
@@ -81,7 +78,7 @@ public class PeerRowView extends JPanel {
         final String lastMessage = this.peer.getLastMessage().getValueAsString();
         this.lastMessageLabel = new JLabel(lastMessage);
         this.lastMessageLabel.setForeground(App.ACCENT_COLOR);
-        this.lastMessageLabel.setFont(PLAIN_FONT);
+        this.lastMessageLabel.setFont(App.NORMAL_FONT);
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.gridwidth = 2;
@@ -92,12 +89,12 @@ public class PeerRowView extends JPanel {
     } 
 
     public void setPeerOnline() {
-        this.statusLabel.setForeground(ONLINE_COLOR);
+        this.statusLabel.setForeground(App.GREEN_COLOR);
         this.revalidate();
     }
 
     public void setPeerOffline() {
-        this.statusLabel.setForeground(OFFLINE_COLOR);
+        this.statusLabel.setForeground(App.RED_COLOR);
         this.revalidate();
     }
 
@@ -105,7 +102,7 @@ public class PeerRowView extends JPanel {
         System.out.println("[updateLastMessage] peer: " + ((this.peer == null) ? "null" : "nie null"));
         System.out.println("[updateLastMessage] msg: " + ((this.peer.getLastMessage() == null) ? "null" : "nie null"));
 
-        this.lastMessageLabel.setFont(bold ? BOLD_FONT : PLAIN_FONT);
+        this.lastMessageLabel.setFont(bold ? App.NORMAL_BOLD_FONT : App.NORMAL_FONT);
         this.lastMessageLabel.setText(this.peer.getLastMessage().getValueAsString());
         this.revalidate();
     }

@@ -2,6 +2,7 @@ package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.PeerStatus;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
@@ -18,6 +19,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.SwingUtilities;
 
 
 public class HomeController implements HomeWindowListener {
@@ -74,7 +77,16 @@ public class HomeController implements HomeWindowListener {
 				row.setPeerOnline();
 			}
 		}
-	}
+
+		if(peer == this.activePeer) {
+			if(status == PeerStatus.OFFLINE) {
+				this.view.setMessageInputEnabled(false);
+			}
+			else if(status == PeerStatus.ONLINE) {
+				this.view.setMessageInputEnabled(true);
+			}
+		}
+ 	}
 
 	public void closeWindow() {
 		this.view.setVisible(false);
@@ -188,11 +200,18 @@ public class HomeController implements HomeWindowListener {
 
 	@Override
 	public void homeWindowDidChangePeer(Peer peer) {
-		this.activePeer = peer;
-		this.view.showChatPanel();
-		this.displayActivePeerMessages();
-		this.view.scrollMessagesToBottom();
-		this.rows.get(peer.getId()).updateLastMessage(false);
+		if(this.activePeer != peer) {
+			this.activePeer = peer;
+			this.view.setMessageInputEnabled(peer.getSession().getState() == P2PSession.State.CONNECTED);
+			this.view.setNick(peer.getNick());
+			this.view.showChatPanel();
+			this.displayActivePeerMessages();
+			this.rows.get(peer.getId()).updateLastMessage(false);
+
+			SwingUtilities.invokeLater(() -> {
+				this.view.scrollMessagesToBottom();
+			});
+		}
 	}
 
 	@Override
@@ -202,10 +221,13 @@ public class HomeController implements HomeWindowListener {
 		}
 
 		final Message message = new TextMessage(this.activePeer, false, text);
-		this.view.appendMessageToBottom(message);
-		this.view.scrollMessagesToBottom();
 		this.activePeer.getMessages().add(message);
 		this.rows.get(this.activePeer.getId()).updateLastMessage(false);
+		this.view.appendMessageToBottom(message);
+
+		SwingUtilities.invokeLater(() -> {
+			this.view.scrollMessagesToBottom();
+		});	
 		
 		if(this.delegate != null) {
 			this.delegate.homeControllerDidEnterMessage(this, message);

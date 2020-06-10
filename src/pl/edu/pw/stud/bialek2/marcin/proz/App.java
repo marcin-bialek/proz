@@ -31,6 +31,7 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
 
+import java.awt.Font;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -61,6 +62,7 @@ public final class App implements UserServiceDelegate,
                                   PortTakenControllerDelegate {
 
     public static final String APP_DISPLAY_NAME = "Chat";
+
     public static final Color BACKGROUND_COLOR = new Color(30, 31, 38);
     public static final Color PRIMARY_COLOR = new Color(40, 54, 85);
     public static final Color SECONDARY_COLOR = new Color(77, 100, 141);
@@ -68,6 +70,14 @@ public final class App implements UserServiceDelegate,
     public static final Color GREEN_COLOR = new Color(108, 172, 78);
     public static final Color RED_COLOR = new Color(187, 22, 29);
     public static final Color LIGHT_RED_COLOR = new Color(251, 172, 168);
+
+    public static final Font BIG_BOLD_FONT = new Font("Verdana", Font.BOLD, 18);
+    public static final Font BIG_FONT = new Font("Verdana", Font.PLAIN, 18);
+    public static final Font NORMAL_FONT = new Font("Verdana", Font.PLAIN, 13);
+    public static final Font NORMAL_BOLD_FONT = new Font("Verdana", Font.BOLD, 13);
+    public static final Font NORMAL_ITALIC_FONT = new Font("Verdana", Font.ITALIC, 13);
+    public static final Font SMALL_FONT = new Font("Verdana", Font.PLAIN, 9);
+
     public static final int DEFAULT_PORT = 52597;
     public static final int DEFAULT_WINDOW_WIDTH = 700;
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
@@ -149,7 +159,7 @@ public final class App implements UserServiceDelegate,
     }
 
     private void loadPeersAndRunP2PServer(User user) {
-        this.databaseService.load(user.getDBFilename());
+        this.databaseService.load(user.getDBFilename(), user.getSecretKey());
         final ArrayList<Peer> peers = this.databaseService.getPeers();
 
         for(Peer peer : peers) {
