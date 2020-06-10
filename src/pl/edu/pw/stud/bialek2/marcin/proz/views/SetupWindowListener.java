@@ -1,4 +1,4 @@
-package pl.edu.pw.stud.bialek2.marcin.proz.views.setup;
+package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.event.KeyEvent;
 

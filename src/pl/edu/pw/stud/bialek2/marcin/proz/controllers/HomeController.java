@@ -11,9 +11,9 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindowListener;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindowListener;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.home.PeerRowView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.HomeWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.HomeWindowListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.PeerRowView;
 
 import java.awt.Color;
 import java.awt.Dimension;

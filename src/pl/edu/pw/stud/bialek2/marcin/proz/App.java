@@ -27,9 +27,9 @@ import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceDelegate;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PeerConnectingWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.home.HomeWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.password.PasswordWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.HomeWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.PasswordWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindow;
 
 import java.awt.Font;
 import java.awt.Color;

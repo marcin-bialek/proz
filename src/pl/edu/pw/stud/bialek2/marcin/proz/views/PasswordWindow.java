@@ -1,4 +1,4 @@
-package pl.edu.pw.stud.bialek2.marcin.proz.views.password;
+package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.Color;
 import java.awt.Dimension;

@@ -4,8 +4,8 @@ import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindow;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.setup.SetupWindowListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindowListener;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
