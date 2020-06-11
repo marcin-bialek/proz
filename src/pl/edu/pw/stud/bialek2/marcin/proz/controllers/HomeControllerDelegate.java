@@ -12,5 +12,6 @@ public interface HomeControllerDelegate {
     public void homeControllerDidEnterMessage(HomeController sender, Message message);
     public void homeControllerDidAddPeer(HomeController sender, Peer peer);
     public void homeControllerDeleteData(HomeController sender);
+    public void homeControllerDeletePeer(HomeController sender, Peer peer);
 }
 

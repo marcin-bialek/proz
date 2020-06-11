@@ -7,7 +7,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -60,7 +59,7 @@ public class P2PService extends Thread {
         try {
             return ((InetSocketAddress)this.serverSocket.getLocalAddress()).getPort();
         }
-        catch(IOException e) {
+        catch(Exception e) {
             e.printStackTrace();
         }
 
@@ -84,10 +83,31 @@ public class P2PService extends Thread {
         this.privateKey = privateKey;
     }
 
-    private void send(P2PSession session, byte[] message) throws IOException {
-        final String encoded = SecurityService.base64Encode(message);
-        final ByteBuffer buffer = ByteBuffer.wrap(encoded.getBytes());
-        session.getChannel().write(buffer);
+    private void writeAll(SocketChannel channel, ByteBuffer buffer, int size) throws Exception {
+        int w = 0;
+        int tw = 0;
+
+        while(tw < size) {
+            if((w = channel.write(buffer)) > 0) {
+                tw += w;
+                // System.out.println("sent: " + w + " (" + tw + "/" + size + ")");
+            }
+            else {
+                try {
+                    Thread.sleep(10);
+                }
+                catch(InterruptedException e) {}
+            }
+        }
+    }
+
+    private void send(P2PSession session, byte[] message) throws Exception {
+        final ByteBuffer buffer1 = ByteBuffer.allocate(4);
+        buffer1.putInt(4 + message.length);
+        buffer1.rewind();
+        final ByteBuffer buffer2 = ByteBuffer.wrap(message);
+        this.writeAll(session.getChannel(), buffer1, 4);
+        this.writeAll(session.getChannel(), buffer2, message.length);
     }
 
     private void sendPing(P2PSession session) {
@@ -101,7 +121,7 @@ public class P2PService extends Thread {
             payload.put((byte)0);
             this.send(session, payload.array());
         } 
-        catch(IOException e) {
+        catch(Exception e) {
             e.printStackTrace();
         }
     }
@@ -179,7 +199,7 @@ public class P2PService extends Thread {
             this.delegate.p2pServiceIncomingConnection(peer);
         }   
         catch(Exception e) {
-            System.out.println("broken client hello");
+            System.out.println("[Warning] Broken client hello.");
         }
     }
 
@@ -205,13 +225,29 @@ public class P2PService extends Thread {
             final SecretKey sessionKey = SecurityService.generateSecretKey(encodedSessionKey);
 
             final Peer peer = session.getPeer();
-            peer.setNick(nick);
-            peer.setPublicKey(serverKey);
-            session.setConnected(sessionKey);
-            this.delegate.p2pServicePeerDidAccept(peer);
+
+            if(peer.getPublicKeyAsString() == null) {
+                peer.setNick(nick);
+                peer.setPublicKey(serverKey);
+                session.setConnected(sessionKey);
+                this.delegate.p2pServicePeerDidAccept(peer);
+            }
+            else if(peer.getPublicKeyAsString().equals(SecurityService.keyToString(serverKey))) {
+                session.setConnected(sessionKey);
+                this.delegate.p2pServicePeerDidAccept(peer);
+            }
+            else {
+                this.sessions.remove(session.getChannel());
+                session.getChannel().close();
+                session.setDisconnected();
+
+                System.out.println("[Warning] Server's public key is different than expected. Connection closed.");
+                // System.out.println(peer.getPublicKeyAsString());
+                // System.out.println(SecurityService.keyToString(serverKey));
+            }
         }
         catch(Exception e) {
-            System.out.println("broken server hello");
+            System.out.println("[Warning] Broken server hello.");
         }
     }
 
@@ -230,17 +266,15 @@ public class P2PService extends Thread {
             this.delegate.p2pServiceDidReceiveMessage(message);
         }
         catch(Exception e) {
-            System.out.println("broken chat message hello");
+            System.out.println("[Warning] Broken chat message.");
         }
     }
 
     private void handleMessage(P2PSession session, byte[] message) {
-        ByteBuffer payload;
-        int type;
+        ByteBuffer payload = ByteBuffer.wrap(message);
+        int type = 0;
 
         try {
-            final String encoded = new String(message);
-            payload = ByteBuffer.wrap(SecurityService.base64Decode(encoded));
             type = payload.getInt();
         }
         catch(Exception e) {
@@ -284,7 +318,7 @@ public class P2PService extends Thread {
                         return true;
                     }
                 }
-                catch(IOException e) {
+                catch(Exception e) {
                     return true;
                 }
 
@@ -309,21 +343,36 @@ public class P2PService extends Thread {
             }
 
             if(key.isReadable()) {
-                final ByteBuffer buffer = ByteBuffer.allocate(128);
+                final ByteBuffer buffer = ByteBuffer.allocate(1024);
                 final ByteArrayOutputStream message = new ByteArrayOutputStream();
                 final SocketChannel client = (SocketChannel)key.channel();
                 final P2PSession session = this.sessions.get(client);
                 int read, totalRead = 0;
 
-                while((read = client.read(buffer)) > 0) {
-                    totalRead += read;
+                if((totalRead = client.read(buffer)) >= 4) {
                     buffer.flip();
-                    message.write(buffer.array());
+                    final int packetSize = buffer.getInt();
+                    message.write(buffer.array(), 0, totalRead);
                     buffer.clear();
-                }
 
-                if(message.size() > 0) {
-                    byte[] sliced = Arrays.copyOfRange(message.toByteArray(), 0, totalRead);
+                    while(packetSize > totalRead) {
+                        if((read = client.read(buffer)) > 0) {
+                            totalRead += read;
+                            // System.out.println("read: " + read + " (" + totalRead + "/" + packetSize + ")");
+
+                            buffer.flip();
+                            message.write(buffer.array(), 0, read);
+                            buffer.clear();
+                        }
+                        else {
+                            try {
+                                Thread.sleep(10);
+                            }
+                            catch(InterruptedException e) {}
+                        }
+                    }
+
+                    byte[] sliced = Arrays.copyOfRange(message.toByteArray(), 4, totalRead);
                     this.handleMessage(session, sliced);
                 }
                 else {
@@ -334,7 +383,7 @@ public class P2PService extends Thread {
                 }
             }
         }
-        catch(IOException e) {
+        catch(Exception e) {
             e.printStackTrace();
 
             try {
@@ -345,7 +394,7 @@ public class P2PService extends Thread {
                 client.close();
                 this.delegate.p2pServicePeerDisconnected(session.getPeer());
             }
-            catch(IOException f) {
+            catch(Exception f) {
                 f.printStackTrace();
             }
         } 
@@ -382,7 +431,7 @@ public class P2PService extends Thread {
                 }
             }
         }
-        catch(IOException e) {
+        catch(Exception e) {
             e.printStackTrace();
             this.delegate.p2pServiceServerError(this.port);
         }
@@ -395,9 +444,9 @@ public class P2PService extends Thread {
         try {
             while(true) {
                 synchronized(m) {
-                    System.out.println("waiting...");
+                    // System.out.println("waiting...");
                     this.m.wait();
-                    System.out.println("starting server...");
+                    // System.out.println("starting server...");
                     this.startServer();
                 }
             }
@@ -421,8 +470,6 @@ public class P2PService extends Thread {
         if(peer.getSession().getState() != P2PSession.State.DISCONNECTED) {
             return;
         }
-
-        System.out.println("connecting to " + peer.getNick());
 
         try {
             final SocketChannel socket = SocketChannel.open();
@@ -449,14 +496,25 @@ public class P2PService extends Thread {
             }
         }
         catch(Exception e) {
-            System.out.println("connect");
             e.printStackTrace();
         }
     }
 
     public void acceptConnection(Peer peer) {
-        final P2PSession.State state = peer.getSession().getState();
         this.sendServerHello(peer.getSession());
+    }
+
+    public void rejectConnection(Peer peer) {
+        try {
+            final P2PSession session = peer.getSession();
+            final SocketChannel channel = session.getChannel();
+            session.setDisconnected();
+            this.sessions.remove(channel);
+            channel.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendMessage(Message message) {

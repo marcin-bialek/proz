@@ -14,7 +14,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.PeerStatus;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.DatabaseServiceDelegate;
@@ -83,6 +82,7 @@ public final class App implements UserServiceDelegate,
     public static final int DEFAULT_WINDOW_HEIGHT = 500;
     public static final String DEFAULT_DATABASE_FILE_NAME = "chat.db";
     public static final String MY_IP_SERVICE_URL = "http://bot.whatismyipaddress.com";
+    public static final int MAX_UPLOAD_IMAGE_SIZE = 1200;
 
     private final BlockingQueue<Runnable> taskQueue;
     private final SecurityService securityService;
@@ -434,6 +434,16 @@ public final class App implements UserServiceDelegate,
     }
 
     @Override
+    public void homeControllerDeletePeer(HomeController sender, Peer peer) {
+        this.invokeLater(() -> {
+            this.peers.remove(peer.getPublicKeyAsString());
+            this.p2pService.rejectConnection(peer);
+            this.databaseService.deleteMessagesFor(peer);
+            this.databaseService.deletePeer(peer);
+        });
+    }
+
+    @Override
     public void peerConnectingControllerDidAccept(PeerConnectingController sender, Peer peer) {
         this.invokeLater(() -> {
             this.p2pService.acceptConnection(peer);
@@ -451,6 +461,10 @@ public final class App implements UserServiceDelegate,
 
     @Override
     public void peerConnectingControllerDidReject(PeerConnectingController sender, Peer peer) {
+        this.invokeLater(() -> {
+            this.p2pService.rejectConnection(peer);
+        });
+
         sender.closeWindow();
     }
 
@@ -460,6 +474,7 @@ public final class App implements UserServiceDelegate,
         final App app = new App();
         app.userService.loadUser(null);
         app.runTaskExecutorLoop();
+        app.exit();
     }
 }
 

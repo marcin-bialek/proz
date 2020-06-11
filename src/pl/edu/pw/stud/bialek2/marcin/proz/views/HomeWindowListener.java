@@ -14,4 +14,7 @@ public interface HomeWindowListener {
     public void homeWindowDidClickDeleteDataButton();   
     public void homeWindowDidChangePeer(Peer peer);
     public void homeWindowDidEnterMessage(String value); 
+    public void homeWindowDidClickImageButton();
+    public void homeWindowDidClickPeerKeyButton();
+    public void homeWindowDidClickDeletePeerButton();
 }

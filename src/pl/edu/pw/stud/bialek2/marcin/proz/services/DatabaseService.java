@@ -57,6 +57,11 @@ public class DatabaseService {
         "   timestamp          " + 
         ") VALUES (?, ?, ?, ?, ?);";
 
+    private final static String SELECT_PEERS_QUERY = "SELECT * FROM peers;";
+    private final static String SELECT_MESSAGES_QUERY = "SELECT * FROM messages WHERE peer_id = ?;";
+    private final static String DELETE_PEER_QUERY = "DELETE FROM peers WHERE id = ?;";
+    private final static String DELETE_MESSAGES_QUERY = "DELETE FROM messages WHERE peer_id = ?;";
+
     private DatabaseServiceDelegate delegate;
     private Connection connection;
     private SecretKey secretKey;
@@ -132,7 +137,7 @@ public class DatabaseService {
         final ArrayList<Peer> peers = new ArrayList<>();
 
         try {
-            PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM peers;");
+            PreparedStatement statement = this.connection.prepareStatement(SELECT_PEERS_QUERY);
             ResultSet result = statement.executeQuery();
 
             while(result.next()) {
@@ -187,7 +192,7 @@ public class DatabaseService {
         final ArrayList<Message> messages = new ArrayList<>();
 
         try {
-            PreparedStatement statement = this.connection.prepareStatement("SELECT * FROM messages WHERE peer_id = ?;");
+            PreparedStatement statement = this.connection.prepareStatement(SELECT_MESSAGES_QUERY);
             statement.setInt(1, peer.getId());
             ResultSet result = statement.executeQuery();
 
@@ -211,6 +216,28 @@ public class DatabaseService {
         }
 
         return messages;
+    }
+
+    public void deletePeer(Peer peer) {
+        try {
+            PreparedStatement statement = this.connection.prepareStatement(DELETE_PEER_QUERY);
+            statement.setInt(1, peer.getId());
+            statement.execute();
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteMessagesFor(Peer peer) {
+        try {
+            PreparedStatement statement = this.connection.prepareStatement(DELETE_MESSAGES_QUERY);
+            statement.setInt(1, peer.getId());
+            statement.execute();
+        }
+        catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
 

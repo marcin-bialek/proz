@@ -10,6 +10,9 @@ public class MessageFactory {
         if(type == MessageType.TEXT_MESSAGE) {
             return new TextMessage(id, peer, incoming, timestamp, value);
         }
+        else if(type == MessageType.IMAGE_MESSAGE) {
+            return new ImageMessage(id, peer, incoming, timestamp, value);
+        }
 
         return new NullMessage(id, peer, timestamp);
     }

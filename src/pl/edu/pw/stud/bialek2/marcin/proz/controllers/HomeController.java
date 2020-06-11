@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.ImageMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
@@ -11,16 +12,27 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.AddPeerWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.DeleteDataWindowListener;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.DeletePeerWindow;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.DeletePeerWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.HomeWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.HomeWindowListener;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PeerRowView;
+import pl.edu.pw.stud.bialek2.marcin.proz.views.PublicKeyDialog;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 public class HomeController implements HomeWindowListener {
@@ -48,11 +60,7 @@ public class HomeController implements HomeWindowListener {
 	}
 
 	public void newMessage(Message message) {
-		// System.out.println("[newMessage] message: " + message);
-		// System.out.println("[newMessage] peer: " + message.getPeer());
-
 		final PeerRowView row = this.rows.get(message.getPeer().getId());
-		// System.out.println("[newMessage] row: " + row);
 		this.view.removePeerRow(row);
 		this.view.insertPeerRow(row);
 
@@ -79,11 +87,11 @@ public class HomeController implements HomeWindowListener {
 		}
 
 		if(peer == this.activePeer) {
-			if(status == PeerStatus.OFFLINE) {
-				this.view.setMessageInputEnabled(false);
-			}
-			else if(status == PeerStatus.ONLINE) {
+			if(status == PeerStatus.ONLINE) {
 				this.view.setMessageInputEnabled(true);
+			}
+			else {
+				this.view.setMessageInputEnabled(false);
 			}
 		}
  	}
@@ -232,5 +240,102 @@ public class HomeController implements HomeWindowListener {
 		if(this.delegate != null) {
 			this.delegate.homeControllerDidEnterMessage(this, message);
 		}
+	}
+
+	@Override
+	public void homeWindowDidClickPeerKeyButton() {
+		if(this.activePeer != null) {
+			new PublicKeyDialog(this.view, "Klucz publiczny " + this.activePeer.getNick(), this.activePeer.getPublicKeyAsString());
+		}
+	}
+
+	@Override
+	public void homeWindowDidClickDeletePeerButton() {
+		if(this.activePeer != null) {
+			final DeletePeerWindow deletePeerWindow = new DeletePeerWindow(this.activePeer.getNick());
+			final HomeController sender = this;
+
+			deletePeerWindow.setListener(new DeletePeerWindowListener(){
+				@Override
+				public void deletePeerWindowDidConfirm() {
+					deletePeerWindow.setVisible(false);
+					deletePeerWindow.dispose();
+					
+					final Peer peer = activePeer;
+					final PeerRowView row = rows.remove(peer.getId());
+					activePeer = null;
+					view.showSettingsPanel();
+					view.removePeerRow(row);
+
+					if(delegate != null) {
+						delegate.homeControllerDeletePeer(sender, peer);
+					}
+				}
+			
+				@Override
+				public void deletePeerWindowDidCancel() {
+					deletePeerWindow.setVisible(false);
+					deletePeerWindow.dispose();
+				}
+			});
+		}
+	}
+
+	@Override
+	public void homeWindowDidClickImageButton() {
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileFilter(new FileNameExtensionFilter("Image file", "jpg", "jpeg", "png", "bmp"));
+		fileChooser.setAcceptAllFileFilterUsed(false);
+		final int result = fileChooser.showOpenDialog(this.view);
+
+		if(result == JFileChooser.APPROVE_OPTION) {
+			final File file = fileChooser.getSelectedFile();
+			
+			try {
+				final BufferedImage image = scaleImageIfTooBig(ImageIO.read(file));
+				final Message message = new ImageMessage(this.activePeer, false, image);
+				this.activePeer.getMessages().add(message);
+				this.rows.get(this.activePeer.getId()).updateLastMessage(false);
+				this.view.appendMessageToBottom(message);
+				
+				SwingUtilities.invokeLater(() -> {
+					this.view.scrollMessagesToBottom();
+				});	
+				
+				if(this.delegate != null) {
+					this.delegate.homeControllerDidEnterMessage(this, message);
+				}
+			}
+			catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static BufferedImage scaleImageIfTooBig(BufferedImage image) {
+		if(image.getWidth() <= App.MAX_UPLOAD_IMAGE_SIZE && image.getHeight() <= App.MAX_UPLOAD_IMAGE_SIZE) {
+			return image;
+		}
+
+		final double width = image.getWidth();
+		final double height = image.getHeight();
+		final double ratio = width / height;
+		double newWidth = 1;
+		double newHeight = 1;
+
+		if(width > height) {
+			newWidth = App.MAX_UPLOAD_IMAGE_SIZE;
+			newHeight = newWidth / ratio;
+		}
+		else {
+			newHeight = App.MAX_UPLOAD_IMAGE_SIZE;
+			newWidth = newHeight * ratio;
+		}
+
+		final BufferedImage newImage = new BufferedImage((int)newWidth, (int)newHeight, BufferedImage.TYPE_INT_ARGB);
+		final Graphics2D graphics = newImage.createGraphics();
+		graphics.drawImage(image, 0, 0, (int)newWidth, (int)newHeight, null);
+		graphics.dispose();
+		return newImage;
 	}
 }

@@ -69,7 +69,7 @@ public class SetupWindow extends JFrame {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.CENTER;
 
-        JTextArea info = new JTextArea("Zanim zaczniesz korzystać z chatu musisz ustawić kilka rzeczy.");
+        JTextArea info = new JTextArea("Zanim zaczniesz korzystać z chatu ustaw kilka rzeczy.");
         info.setForeground(Color.WHITE);
         info.setOpaque(false);
         info.setEditable(false);
@@ -127,7 +127,7 @@ public class SetupWindow extends JFrame {
         this.add(this.databaseFieldView, constraints);
 
         JTextPane nickPane = new JTextPane();
-        nickPane.setText("To Twój identyfikator, który będą widzieli Twoi znajomi. Jego zmiana będzie możliwa jedynie poprzez usunięcie danych aplikacji i ponowną instalację.");
+        nickPane.setText("To Twój identyfikator, który będą widzieli Twoi znajomi. Musi składać się co najmniej z 6 znaków. Jego zmiana będzie możliwa jedynie poprzez usunięcie danych aplikacji i ponowną instalację.");
         nickPane.setEditable(false);
         nickPane.setForeground(Color.WHITE);
         nickPane.setOpaque(false);

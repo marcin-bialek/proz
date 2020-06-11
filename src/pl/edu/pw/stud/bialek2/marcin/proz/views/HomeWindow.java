@@ -15,6 +15,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -46,6 +47,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -54,10 +56,12 @@ public class HomeWindow extends JFrame {
     private static final long serialVersionUID = -7341554873868191886L;
     private static final String CHAT_CARD = "CHAT";
     private static final String SETTINGS_CARD = "SETTINGS";
-    private static final Color LIGHT_GREY_1 = new Color(230, 230, 230);
-
     private static BufferedImage addImage;
     private static BufferedImage gearImage;
+    private static BufferedImage imageImage;
+    private static BufferedImage keyImage;
+    private static BufferedImage deleteImage;
+
     private HomeWindowListener listener;
     private JPanel centerPanel;
     private CardLayout centerPanelLayout;
@@ -71,6 +75,7 @@ public class HomeWindow extends JFrame {
     private JLabel publicKeyValueLabel;
     private JLabel nickLabel;
     private RoundedTextAreaView messageInputView;
+    private JButton imageButton;
     private String fullPublicKey = "";
 
     public HomeWindow(Dimension windowSize) {
@@ -146,7 +151,7 @@ public class HomeWindow extends JFrame {
     }
 
     private JPanel makeControlPanel() {
-        final JButton addPeerButton = new JButton(new ImageIcon(addImage.getScaledInstance(20, 20, Image.SCALE_FAST)));
+        final JButton addPeerButton = new JButton(new ImageIcon(addImage.getScaledInstance(18, 18, Image.SCALE_AREA_AVERAGING)));
         addPeerButton.setOpaque(false);
         addPeerButton.setContentAreaFilled(false);
         addPeerButton.setBorderPainted(false);
@@ -159,7 +164,7 @@ public class HomeWindow extends JFrame {
             }    
         });
 
-        final JButton settingsButton = new JButton(new ImageIcon(gearImage.getScaledInstance(20, 20, Image.SCALE_FAST)));
+        final JButton settingsButton = new JButton(new ImageIcon(gearImage.getScaledInstance(18, 18, Image.SCALE_AREA_AVERAGING)));
         settingsButton.setOpaque(false);
         settingsButton.setContentAreaFilled(false);
         settingsButton.setBorderPainted(false);
@@ -174,7 +179,7 @@ public class HomeWindow extends JFrame {
 
         final JPanel view = new JPanel();
         view.setOpaque(false);
-        view.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
         view.setLayout(new BorderLayout());
         view.add(addPeerButton, BorderLayout.WEST);
         view.add(settingsButton, BorderLayout.EAST);
@@ -197,14 +202,46 @@ public class HomeWindow extends JFrame {
     }
 
     private JPanel makePeerInfoPanel() {
-        this.nickLabel = new JLabel("");
-        this.nickLabel.setFont(App.BIG_FONT);
-
         final JPanel view = new JPanel();
-        view.setBackground(LIGHT_GREY_1);
         view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
         view.setLayout(new BorderLayout());
+
+        this.nickLabel = new JLabel("");
+        this.nickLabel.setFont(App.BIG_FONT);
         view.add(this.nickLabel, BorderLayout.CENTER);
+
+        final JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
+        view.add(buttonsPanel, BorderLayout.EAST);
+
+        final JButton keyButton = new JButton(new ImageIcon(keyImage.getScaledInstance(20, 20, Image.SCALE_AREA_AVERAGING)));
+        keyButton.setOpaque(false);
+        keyButton.setContentAreaFilled(false);
+        keyButton.setBorderPainted(false);
+        buttonsPanel.add(keyButton);
+        keyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(listener != null) {
+                    listener.homeWindowDidClickPeerKeyButton();
+                }
+            }
+        });
+
+        final JButton deleteButton = new JButton(new ImageIcon(deleteImage.getScaledInstance(20, 20, Image.SCALE_AREA_AVERAGING)));
+        deleteButton.setOpaque(false);
+        deleteButton.setContentAreaFilled(false);
+        deleteButton.setBorderPainted(false);
+        buttonsPanel.add(deleteButton);
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(listener != null) {
+                    listener.homeWindowDidClickDeletePeerButton();
+                }
+            }
+        });
+
         return view;
     }
 
@@ -229,8 +266,28 @@ public class HomeWindow extends JFrame {
     }
 
     private JPanel makeMessageInputPanel() {
-        this.messageInputView = new RoundedTextAreaView();
+        final JPanel view = new JPanel();
+        view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
+        view.setLayout(new BorderLayout());
 
+        this.imageButton = new JButton(new ImageIcon(imageImage.getScaledInstance(25, 25, Image.SCALE_AREA_AVERAGING)));
+        this.imageButton.setEnabled(false);
+        this.imageButton.setOpaque(false);
+        this.imageButton.setContentAreaFilled(false);
+        this.imageButton.setBorderPainted(false);
+        this.imageButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+        this.imageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(listener != null) {
+                    listener.homeWindowDidClickImageButton();
+                }
+            }
+        });
+        
+        view.add(this.imageButton, BorderLayout.WEST);
+
+        this.messageInputView = new RoundedTextAreaView();
         this.messageInputView.getTextArea().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
@@ -243,10 +300,6 @@ public class HomeWindow extends JFrame {
             }
         });
 
-        final JPanel view = new JPanel();
-        view.setBackground(LIGHT_GREY_1);
-        view.setBorder(BorderFactory.createEmptyBorder(7, 10, 7, 10));
-        view.setLayout(new BorderLayout());
         view.add(this.messageInputView, BorderLayout.CENTER);
         return view;
     }
@@ -415,11 +468,13 @@ public class HomeWindow extends JFrame {
     public void insertPeerRow(PeerRowView row) {
         this.peersWrapperPanel.add(row, 0);
         this.peersWrapperPanel.revalidate();
+        this.peersWrapperPanel.repaint();
     }
 
     public void removePeerRow(PeerRowView row) {
         this.peersWrapperPanel.remove(row);
         this.peersWrapperPanel.revalidate();
+        this.peersWrapperPanel.repaint();
     }
 
     public void scrollMessagesToBottom() {
@@ -427,19 +482,20 @@ public class HomeWindow extends JFrame {
         final Rectangle v = this.messagesScrollView.getViewport().getViewRect();
         final Rectangle r = new Rectangle(v.x, b.height - v.height, v.width, v.height);
         this.messagesScrollView.getViewport().scrollRectToVisible(r);
-        this.messagesScrollView.revalidate();
     }
 
     public void appendMessageToTop(Message message) {
         final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
         this.messagesWrapperPanel.add(row, 0);
-        this.messagesWrapperPanel.revalidate();
+        this.messagesWrapperPanel.validate();
+        row.revalidate();
     }
 
     public void appendMessageToBottom(Message message) {
         final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
         this.messagesWrapperPanel.add(row);
-        this.messagesWrapperPanel.revalidate();
+        this.messagesWrapperPanel.validate();
+        row.revalidate();
     }
 
     public void setNick(String nick) {
@@ -477,6 +533,7 @@ public class HomeWindow extends JFrame {
             this.messageInputView.getTextArea().setForeground(Color.DARK_GRAY);
             this.messageInputView.getTextArea().getCaret().setVisible(true);
             this.messageInputView.getTextArea().setText("");
+            this.imageButton.setEnabled(true);
         }
         else {
             this.messageInputView.getTextArea().setEditable(false);
@@ -484,6 +541,7 @@ public class HomeWindow extends JFrame {
             this.messageInputView.getTextArea().setForeground(Color.GRAY);
             this.messageInputView.getTextArea().getCaret().setVisible(false);
             this.messageInputView.getTextArea().setText("Użytkownik jest offline");
+            this.imageButton.setEnabled(false);
         }
     }
 
@@ -491,6 +549,9 @@ public class HomeWindow extends JFrame {
         try {
             addImage = ImageIO.read(HomeWindow.class.getResource("/resources/add.png"));
             gearImage = ImageIO.read(HomeWindow.class.getResource("/resources/gear.png"));
+            imageImage = ImageIO.read(HomeWindow.class.getResource("/resources/image.png"));
+            keyImage = ImageIO.read(HomeWindow.class.getResource("/resources/key.png"));
+            deleteImage = ImageIO.read(HomeWindow.class.getResource("/resources/delete.png"));
         }
         catch(IOException e) {
             e.printStackTrace();
