@@ -224,7 +224,7 @@ public class HomeController implements HomeWindowListener {
 
 	@Override
 	public void homeWindowDidEnterMessage(String text) {
-		if(this.activePeer == null) {
+		if(this.activePeer == null || this.activePeer.getSession().getState() != P2PSession.State.CONNECTED) {
 			return;
 		}
 

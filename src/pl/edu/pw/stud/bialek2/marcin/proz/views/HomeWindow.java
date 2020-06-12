@@ -291,7 +291,7 @@ public class HomeWindow extends JFrame {
         this.messageInputView.getTextArea().addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent event) {
-                if(event.getKeyCode() == KeyEvent.VK_ENTER) {
+                if(event.getKeyCode() == KeyEvent.VK_ENTER && messageInputView.getTextArea().isEditable()) {
                     event.consume();
                     final String text = messageInputView.getTextArea().getText();
                     messageInputView.getTextArea().setText("");
