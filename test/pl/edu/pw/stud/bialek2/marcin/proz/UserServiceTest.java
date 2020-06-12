@@ -1,16 +1,12 @@
 package pl.edu.pw.stud.bialek2.marcin.proz;
 
-import org.junit.Test;
-
-import java.util.HashMap;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-
 import pl.edu.pw.stud.bialek2.marcin.proz.models.User;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserServiceDelegate;
+
+import org.junit.Test;
+import org.junit.Assert;
+import java.util.HashMap;
 
 
 public class UserServiceTest {

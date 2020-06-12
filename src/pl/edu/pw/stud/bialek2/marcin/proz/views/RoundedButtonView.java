@@ -4,11 +4,12 @@ import pl.edu.pw.stud.bialek2.marcin.proz.App;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-
 import javax.swing.JButton;
 
 
 public class RoundedButtonView extends RoundedView {
+    private static final long serialVersionUID = 4531592537899646569L;
+    
     private Color backgroundColor;
     private JButton button;
 

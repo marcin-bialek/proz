@@ -1,10 +1,9 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
+
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 
 
 public class Peer {

@@ -7,7 +7,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -20,18 +19,19 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.crypto.SecretKey;
 
 
 public class P2PService extends Thread {
+    private static final int CLIENT_HELLO_CODE = 3;
+    private static final int SERVER_HELLO_CODE = 4;
+    private static final int CHAT_MESSAGE_CODE = 5;
+
     private P2PServiceDelegate delegate;
     private Selector selector;
     private ServerSocketChannel serverSocket;
@@ -110,27 +110,11 @@ public class P2PService extends Thread {
         this.writeAll(session.getChannel(), buffer2, message.length);
     }
 
-    private void sendPing(P2PSession session) {
-
-    }
-
-    private void sendPong(P2PSession session) {
-        try {
-            final ByteBuffer payload = ByteBuffer.allocate(4);
-            payload.putInt(2);
-            payload.put((byte)0);
-            this.send(session, payload.array());
-        } 
-        catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void sendClientHello(P2PSession session) {
         try {
             final int size = 17 + this.encodedNick.length + this.encodedPublicKey.length;
             final ByteBuffer payload = ByteBuffer.allocate(size);
-            payload.putInt(3);
+            payload.putInt(CLIENT_HELLO_CODE);
             payload.putInt(this.port);
             payload.putInt(this.encodedNick.length);
             payload.put(this.encodedNick);
@@ -154,7 +138,7 @@ public class P2PService extends Thread {
 
             final int size = 21 + this.encodedNick.length + this.encodedPublicKey.length + encryptedSessionKey.length;
             final ByteBuffer payload = ByteBuffer.allocate(size);
-            payload.putInt(4);
+            payload.putInt(SERVER_HELLO_CODE);
             payload.putInt(this.encodedNick.length);
             payload.put(this.encodedNick);
             payload.putInt(this.encodedPublicKey.length);
@@ -172,8 +156,27 @@ public class P2PService extends Thread {
         }
     }
 
-    private void handlePong(P2PSession session) {
+    public void sendMessage(Message message) {
+        final P2PSession session = message.getPeer().getSession();
 
+        if(session.getState() == P2PSession.State.CONNECTED) {
+            try {
+                final byte[] encodedMessage = message.getValueAsBytes();
+                final byte[] encryptedMessage = SecurityService.symmetricEncrypt(encodedMessage, session.getKey());
+                final int size = 17 + encryptedMessage.length;
+                final ByteBuffer payload = ByteBuffer.allocate(size);
+                payload.putInt(CHAT_MESSAGE_CODE);
+                payload.putInt(message.getType().getValue());
+                payload.putInt(encodedMessage.length);
+                payload.putInt(encryptedMessage.length);
+                payload.put(encryptedMessage);
+                payload.put((byte)0);
+                this.send(session, payload.array());
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void handleClientHello(P2PSession session, ByteBuffer payload) {
@@ -242,8 +245,6 @@ public class P2PService extends Thread {
                 session.setDisconnected();
 
                 System.out.println("[Warning] Server's public key is different than expected. Connection closed.");
-                // System.out.println(peer.getPublicKeyAsString());
-                // System.out.println(SecurityService.keyToString(serverKey));
             }
         }
         catch(Exception e) {
@@ -283,23 +284,15 @@ public class P2PService extends Thread {
         }
 
         switch(type) {
-            case 1: // ping
-                this.sendPong(session);
-                break;
-            
-            case 2: // pong 
-                this.handlePong(session);
-                break;
-
-            case 3: // client hello 
+            case CLIENT_HELLO_CODE: 
                 this.handleClientHello(session, payload);
                 break;
 
-            case 4: // server hello 
+            case SERVER_HELLO_CODE: 
                 this.handleServerHello(session, payload);
                 break;
 
-            case 5: // message 
+            case CHAT_MESSAGE_CODE:
                 this.handleChatMessage(session, payload);
                 break;
 
@@ -358,8 +351,6 @@ public class P2PService extends Thread {
                     while(packetSize > totalRead) {
                         if((read = client.read(buffer)) > 0) {
                             totalRead += read;
-                            // System.out.println("read: " + read + " (" + totalRead + "/" + packetSize + ")");
-
                             buffer.flip();
                             message.write(buffer.array(), 0, read);
                             buffer.clear();
@@ -444,9 +435,7 @@ public class P2PService extends Thread {
         try {
             while(true) {
                 synchronized(m) {
-                    // System.out.println("waiting...");
                     this.m.wait();
-                    // System.out.println("starting server...");
                     this.startServer();
                 }
             }
@@ -514,29 +503,6 @@ public class P2PService extends Thread {
         }
         catch(Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    public void sendMessage(Message message) {
-        final P2PSession session = message.getPeer().getSession();
-
-        if(session.getState() == P2PSession.State.CONNECTED) {
-            try {
-                final byte[] encodedMessage = message.getValueAsBytes();
-                final byte[] encryptedMessage = SecurityService.symmetricEncrypt(encodedMessage, session.getKey());
-                final int size = 17 + encryptedMessage.length;
-                final ByteBuffer payload = ByteBuffer.allocate(size);
-                payload.putInt(5);
-                payload.putInt(message.getType().getValue());
-                payload.putInt(encodedMessage.length);
-                payload.putInt(encryptedMessage.length);
-                payload.put(encryptedMessage);
-                payload.put((byte)0);
-                this.send(session, payload.array());
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 

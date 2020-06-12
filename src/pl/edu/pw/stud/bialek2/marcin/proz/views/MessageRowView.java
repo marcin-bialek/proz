@@ -5,20 +5,11 @@ import pl.edu.pw.stud.bialek2.marcin.proz.models.ImageMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.TextMessage;
-import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Container;
 import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Image;
-
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
@@ -29,11 +20,9 @@ public class MessageRowView extends JPanel {
     private static final Color MESSAGE_2_COLOR = new Color(50, 50, 50);
 
     private Message message;
-    private Container container;
 
-    public MessageRowView(Message message, Container container) {
+    public MessageRowView(Message message) {
         this.message = message;
-        this.container = container;
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
         this.initComponents();
@@ -63,6 +52,8 @@ public class MessageRowView extends JPanel {
         final MessageRowView row = this;
 
         final RoundedView bubble = new RoundedView(15) {
+            private static final long serialVersionUID = -6769918848717339799L;
+
             @Override
             public Dimension getPreferredSize() {
                 final Dimension size = super.getPreferredSize();
@@ -85,6 +76,8 @@ public class MessageRowView extends JPanel {
         final MessageRowView row = this;
 
         final JPanel panel = new RoundedImageView(message.getImage(), 15) {
+            private static final long serialVersionUID = 6321639807996528955L;
+
             @Override
             public Dimension getPreferredSize() {
                 final Dimension size = super.getPreferredSize();

@@ -1,7 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 
 import java.awt.Dimension;
 

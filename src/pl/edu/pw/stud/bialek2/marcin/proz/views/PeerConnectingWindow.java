@@ -13,14 +13,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+
 
 public class PeerConnectingWindow extends JFrame {
+    private static final long serialVersionUID = 8417781441111585541L;
+    
     private PeerConnectingWindowListener listener;
     private JLabel nickValueLabel;
     private JLabel addressValueLabel;

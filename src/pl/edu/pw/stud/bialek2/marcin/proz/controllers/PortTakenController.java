@@ -1,11 +1,11 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
-import java.awt.Color;
-
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PortTakenWindowListener;
+
+import java.awt.Color;
 
 
 public class PortTakenController implements PortTakenWindowListener {

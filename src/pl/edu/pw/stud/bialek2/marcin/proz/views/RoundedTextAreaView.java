@@ -2,12 +2,12 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.Color;
 import java.awt.BorderLayout;
-
-import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
 
 
 public class RoundedTextAreaView extends RoundedView {
+    private static final long serialVersionUID = 7149054062456877171L;
+
     private JTextArea textArea;
 
     public RoundedTextAreaView(int cornerRadius) {
@@ -18,7 +18,6 @@ public class RoundedTextAreaView extends RoundedView {
         this.textArea.setOpaque(false);
         this.textArea.setLineWrap(true);
         this.textArea.setWrapStyleWord(true);
-        //this.textArea.setBorder(BorderFactory.createEmptyBorder(3, 7, 3, 7));
         this.getSafeArea().add(this.textArea, BorderLayout.CENTER);
     }
 

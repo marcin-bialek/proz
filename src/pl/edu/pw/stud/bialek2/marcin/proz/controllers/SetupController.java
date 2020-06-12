@@ -8,10 +8,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindowListener;
 
 import java.awt.Color;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 
 
 public class SetupController implements SetupWindowListener {

@@ -1,9 +1,6 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedPasswordFieldView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextFieldView;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,19 +13,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.WindowAdapter;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.JTextField;
 
 
 public class SetupWindow extends JFrame {
     private static final long serialVersionUID = 206072431562958302L;
+    
     private SetupWindowListener listener;
     private RoundedTextFieldView nickFieldView;
     private RoundedPasswordFieldView passwordFieldView;

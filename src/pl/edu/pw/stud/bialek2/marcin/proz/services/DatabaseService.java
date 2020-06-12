@@ -1,5 +1,10 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.services;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageFactory;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
+import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
+
 import java.security.PublicKey;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,14 +15,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.crypto.SecretKey;
-
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageFactory;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.MessageType;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
 
 public class DatabaseService {

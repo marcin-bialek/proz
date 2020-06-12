@@ -1,10 +1,8 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
-import java.awt.Font;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.BorderLayout;

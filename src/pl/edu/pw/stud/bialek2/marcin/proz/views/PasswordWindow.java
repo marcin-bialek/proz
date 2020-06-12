@@ -1,5 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.App;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -11,20 +13,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
-
-import pl.edu.pw.stud.bialek2.marcin.proz.App;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedPasswordFieldView;
 
 
 public class PasswordWindow extends JFrame {
     private static final long serialVersionUID = -1741907328559266181L;
+    
     private PasswordWindowListener listener;
     private RoundedPasswordFieldView passwordFieldView;
     private RoundedButtonView submitButtonView;

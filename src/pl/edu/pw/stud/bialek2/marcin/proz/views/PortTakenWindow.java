@@ -13,15 +13,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
-
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
+
 
 public class PortTakenWindow extends JFrame {
+    private static final long serialVersionUID = -1349009766878591872L;
+    
     private PortTakenWindowListener listener;
     private JTextArea infoArea;
     private RoundedTextFieldView portFieldView;

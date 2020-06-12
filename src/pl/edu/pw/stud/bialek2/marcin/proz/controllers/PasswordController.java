@@ -4,8 +4,6 @@ import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PasswordWindowListener;
 
-import java.awt.Color;
-
 
 public class PasswordController implements PasswordWindowListener {
     private PasswordControllerDelegate delegate;

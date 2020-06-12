@@ -2,7 +2,6 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.Frame;
 import java.awt.BorderLayout;
-
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;

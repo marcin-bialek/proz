@@ -3,30 +3,7 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views;
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.PublicKeyDialog;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedButtonView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedScrollView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedTextAreaView;
-import pl.edu.pw.stud.bialek2.marcin.proz.views.RoundedView;
 
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-
-import java.awt.Point;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.BorderLayout;
@@ -47,15 +24,23 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 
 public class HomeWindow extends JFrame {
     private static final long serialVersionUID = -7341554873868191886L;
     private static final String CHAT_CARD = "CHAT";
     private static final String SETTINGS_CARD = "SETTINGS";
+    
     private static BufferedImage addImage;
     private static BufferedImage gearImage;
     private static BufferedImage imageImage;
@@ -247,6 +232,8 @@ public class HomeWindow extends JFrame {
 
     private JPanel makeMessageListPanel() {
         this.messagesWrapperPanel = new JPanel() {
+            private static final long serialVersionUID = 3332926982271420513L;
+
             @Override
             public Dimension getPreferredSize() {
                 Dimension dimension = super.getPreferredSize();
@@ -485,14 +472,14 @@ public class HomeWindow extends JFrame {
     }
 
     public void appendMessageToTop(Message message) {
-        final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
+        final MessageRowView row = new MessageRowView(message);
         this.messagesWrapperPanel.add(row, 0);
         this.messagesWrapperPanel.validate();
         row.revalidate();
     }
 
     public void appendMessageToBottom(Message message) {
-        final MessageRowView row = new MessageRowView(message, messagesWrapperPanel);
+        final MessageRowView row = new MessageRowView(message);
         this.messagesWrapperPanel.add(row);
         this.messagesWrapperPanel.validate();
         row.revalidate();

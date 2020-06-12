@@ -3,7 +3,6 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views;
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
 
 import java.awt.Dimension;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -12,16 +11,14 @@ import java.awt.event.ActionListener;
 import java.awt.GridBagConstraints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 
 public class AddPeerWindow extends JFrame {
+    private static final long serialVersionUID = -6534937685796779127L;
+    
     private AddPeerWindowListener listener;
     private RoundedTextFieldView addressFieldView;
     private RoundedTextFieldView portFieldView;

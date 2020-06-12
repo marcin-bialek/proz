@@ -9,11 +9,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.GridBagConstraints;
-
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
 
+
 public class DeleteDataWindow extends JFrame {
+    private static final long serialVersionUID = 119063506472880961L;
+    
     private DeleteDataWindowListener listener;
 
     public DeleteDataWindow() {

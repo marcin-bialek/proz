@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 
 public class RoundedView extends JPanel {
     private static final long serialVersionUID = -3639064706728525554L;
+    
     private JPanel content = new JPanel();
     private JPanel safeArea = new JPanel();
     private int cornerRadius;

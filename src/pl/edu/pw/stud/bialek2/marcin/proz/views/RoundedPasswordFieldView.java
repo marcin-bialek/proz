@@ -2,12 +2,13 @@ package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import java.awt.Color;
 import java.awt.BorderLayout;
-
 import javax.swing.BorderFactory;
 import javax.swing.JPasswordField;
 
 
 public class RoundedPasswordFieldView extends RoundedView {
+    private static final long serialVersionUID = 1475597450284239597L;
+    
     private JPasswordField passwordField;
 
     public RoundedPasswordFieldView(int cornerRadius) {

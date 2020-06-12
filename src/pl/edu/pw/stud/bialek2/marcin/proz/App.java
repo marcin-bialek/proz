@@ -33,19 +33,12 @@ import pl.edu.pw.stud.bialek2.marcin.proz.views.SetupWindow;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -85,7 +78,6 @@ public final class App implements UserServiceDelegate,
     public static final int MAX_UPLOAD_IMAGE_SIZE = 1200;
 
     private final BlockingQueue<Runnable> taskQueue;
-    private final SecurityService securityService;
     private final UserService userService; 
     private final DatabaseService databaseService;
     private final P2PService p2pService;
@@ -98,7 +90,6 @@ public final class App implements UserServiceDelegate,
         this.peers = new HashMap<>();
 
         SecurityService.setStaticDelegate(this);
-        this.securityService = new SecurityService();
         this.userService = new UserService(this, this.getClass().getName());
         this.databaseService = new DatabaseService(this);
         this.p2pService = new P2PService(this);

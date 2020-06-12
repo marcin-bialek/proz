@@ -16,14 +16,13 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 
 public class SecurityService {
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
@@ -161,14 +160,6 @@ public class SecurityService {
 
     public static byte[] asymmetricDecrypt(final byte[] input, final Key key) throws WrongPasswordException {
         return doCrypto(input, key, ASYMMETRIC_CIPHER_TRANSFORMATION, Cipher.DECRYPT_MODE);
-    }
-
-    public static String base64Encode(final byte[] input) {
-        return Base64.getEncoder().encodeToString(input);
-    }
-
-    public static byte[] base64Decode(final String input) {
-        return Base64.getDecoder().decode(input);
     }
 
     public static byte[] encodeString(final String input) {

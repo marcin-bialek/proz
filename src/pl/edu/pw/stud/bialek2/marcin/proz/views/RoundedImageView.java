@@ -5,20 +5,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.geom.RoundRectangle2D;
-
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 
 public class RoundedImageView extends JPanel {
+    private static final long serialVersionUID = 3557801757471949130L;
+    
     private BufferedImage image;
     private BufferedImage scaledImage;
     private int cornerRadius;
