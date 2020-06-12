@@ -99,7 +99,7 @@ public final class App implements UserServiceDelegate,
 
         SecurityService.setStaticDelegate(this);
         this.securityService = new SecurityService();
-        this.userService = new UserService(this);
+        this.userService = new UserService(this, this.getClass().getName());
         this.databaseService = new DatabaseService(this);
         this.p2pService = new P2PService(this);
     }
