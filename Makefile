@@ -1,6 +1,7 @@
 jar:
 	mkdir -p bin
 	mkdir -p out
+	mkdir -p out/resources
 	find ./src/ -name "*.java" > sources.txt
 	javac --release 8 -classpath ./lib/sqlite-jdbc-3.30.1.jar @sources.txt -d ./out/ 
 	cp ./lib/sqlite-jdbc-3.30.1.jar ./out/

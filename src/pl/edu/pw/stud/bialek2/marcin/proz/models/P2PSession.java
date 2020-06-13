@@ -57,14 +57,6 @@ public class P2PSession {
         this.state = State.RECEIVED_CLIENT_HELLO;
     }
 
-    public void setSentServerHello() {
-        this.state = State.SENT_SERVER_HELLO;
-    }
-
-    public void setReceivedServerHello() {
-        this.state = State.RECEIVED_SERVER_HELLO;
-    }
-
     public void setConnected(SecretKey key) {
         this.key = key;
         this.state = State.CONNECTED;
@@ -75,8 +67,6 @@ public class P2PSession {
         CONNECTING,
         SENT_CLIENT_HELLO,
         RECEIVED_CLIENT_HELLO,
-        SENT_SERVER_HELLO,
-        RECEIVED_SERVER_HELLO,
         CONNECTED
     }     
 }

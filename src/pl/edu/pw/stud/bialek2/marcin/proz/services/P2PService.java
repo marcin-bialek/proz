@@ -90,7 +90,6 @@ public class P2PService extends Thread {
         while(tw < size) {
             if((w = channel.write(buffer)) > 0) {
                 tw += w;
-                // System.out.println("sent: " + w + " (" + tw + "/" + size + ")");
             }
             else {
                 try {
@@ -279,7 +278,7 @@ public class P2PService extends Thread {
             type = payload.getInt();
         }
         catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("[Warning] Broken message.");
             return;
         }
 
@@ -289,11 +288,17 @@ public class P2PService extends Thread {
                 break;
 
             case SERVER_HELLO_CODE: 
-                this.handleServerHello(session, payload);
+                if(session.getState() == P2PSession.State.SENT_CLIENT_HELLO) {
+                    this.handleServerHello(session, payload);
+                }
+
                 break;
 
             case CHAT_MESSAGE_CODE:
-                this.handleChatMessage(session, payload);
+                if(session.getState() == P2PSession.State.CONNECTED) {
+                    this.handleChatMessage(session, payload);
+                }
+                
                 break;
 
             default:
@@ -375,8 +380,6 @@ public class P2PService extends Thread {
             }
         }
         catch(Exception e) {
-            e.printStackTrace();
-
             try {
                 final SocketChannel client = (SocketChannel)key.channel();
                 final P2PSession session = this.sessions.get(client);
@@ -490,7 +493,9 @@ public class P2PService extends Thread {
     }
 
     public void acceptConnection(Peer peer) {
-        this.sendServerHello(peer.getSession());
+        if(peer.getSession().getState() == P2PSession.State.RECEIVED_CLIENT_HELLO) {
+            this.sendServerHello(peer.getSession());
+        }
     }
 
     public void rejectConnection(Peer peer) {

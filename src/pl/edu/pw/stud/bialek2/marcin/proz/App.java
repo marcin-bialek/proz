@@ -81,7 +81,6 @@ public final class App implements UserServiceDelegate,
     private final UserService userService; 
     private final DatabaseService databaseService;
     private final P2PService p2pService;
-
     private HomeController homeController;
     private HashMap<String, Peer> peers;
 
@@ -260,6 +259,7 @@ public final class App implements UserServiceDelegate,
             }
             else {
                 this.databaseService.insertPeer(peer);
+                this.peers.put(peer.getPublicKeyAsString(), peer);
 
                 SwingUtilities.invokeLater(() -> {
                     homeController.newPeer(peer);
@@ -431,6 +431,8 @@ public final class App implements UserServiceDelegate,
 
     @Override
     public void peerConnectingControllerDidAccept(PeerConnectingController sender, Peer peer) {
+        sender.closeWindow();
+
         this.invokeLater(() -> {
             this.p2pService.acceptConnection(peer);
             this.databaseService.insertPeer(peer);
@@ -441,17 +443,15 @@ public final class App implements UserServiceDelegate,
                 homeController.updatePeerStatus(peer, PeerStatus.ONLINE);
             });
         });
-
-        sender.closeWindow();
     }
 
     @Override
     public void peerConnectingControllerDidReject(PeerConnectingController sender, Peer peer) {
+        sender.closeWindow();
+        
         this.invokeLater(() -> {
             this.p2pService.rejectConnection(peer);
         });
-
-        sender.closeWindow();
     }
 
     public static void main(String[] args) {
