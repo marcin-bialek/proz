@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -20,7 +21,7 @@ import javax.swing.JTextArea;
 
 public class PortTakenWindow extends JFrame {
     private static final long serialVersionUID = -1349009766878591872L;
-    
+
     private PortTakenWindowListener listener;
     private JTextArea infoArea;
     private RoundedTextFieldView portFieldView;
@@ -71,7 +72,7 @@ public class PortTakenWindow extends JFrame {
         constraints.insets = new Insets(20, 20, 0, 20);
         this.add(this.infoArea, constraints);
 
-        final JLabel newPortLabel = new JLabel("Nowy port:");
+        final JLabel newPortLabel = new JLabel(Language.DEFAULT.getString("new_port") + ":");
         newPortLabel.setForeground(Color.WHITE);
         constraints.gridy = 1;
         constraints.gridwidth = 1;
@@ -85,7 +86,7 @@ public class PortTakenWindow extends JFrame {
         constraints.insets = new Insets(40, 0, 20, 20);
         this.add(this.portFieldView, constraints);
 
-        this.onlyOnceButtonView = new RoundedButtonView("Użyj tego portu tylko teraz");
+        this.onlyOnceButtonView = new RoundedButtonView(Language.DEFAULT.getString("use_port_once"));
         this.onlyOnceButtonView.disableButton();
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -93,7 +94,7 @@ public class PortTakenWindow extends JFrame {
         constraints.insets = new Insets(20, 20, 0, 20);
         this.add(this.onlyOnceButtonView, constraints);
 
-        this.saveButtonView = new RoundedButtonView("Ustaw ten port jako dymyślny");
+        this.saveButtonView = new RoundedButtonView(Language.DEFAULT.getString("use_port_always"));
         this.saveButtonView.disableButton();
         constraints.gridy = 3;
         constraints.insets = new Insets(20, 20, 20, 20);
@@ -128,7 +129,7 @@ public class PortTakenWindow extends JFrame {
     }
 
     public void setCurrentPort(int port) {
-        this.infoArea.setText("Nie udało się uruchomić serwera na porcie " + port + ". Być może jest on już używany przez inną aplikację. Podaj inny port lub wyłącz aplikację, która go używa. Pamiętaj, że zmiana portu może uniemożliwić Twoim zajomym połączenie się z Tobą.");
+        this.infoArea.setText(String.format(Language.DEFAULT.getString("port_taken_info"), port));
         this.infoArea.revalidate();
     }
 

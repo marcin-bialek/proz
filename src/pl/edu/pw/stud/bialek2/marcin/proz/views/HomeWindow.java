@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Peer;
 
@@ -306,30 +307,30 @@ public class HomeWindow extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.gridx = 0;
 
-        final JLabel nickLabel = new JLabel("Mój nick:");
+        final JLabel nickLabel = new JLabel(Language.DEFAULT.getString("my_nick") + ":");
         nickLabel.setFont(App.NORMAL_FONT);
         constraints.weightx = 0.1;
         constraints.gridy = 0;
         constraints.insets = new Insets(0, 0, 0, 20);
         wrapper.add(nickLabel, constraints);
 
-        final JLabel localAddressLabel = new JLabel("Mój adres lokalny:");
+        final JLabel localAddressLabel = new JLabel(Language.DEFAULT.getString("my_local_address") + ":");
         localAddressLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 1;
         constraints.insets = new Insets(20, 0, 0, 20);
         wrapper.add(localAddressLabel, constraints);
 
-        final JLabel externalAddressLabel = new JLabel("Mój adres zewnętrzny:");
+        final JLabel externalAddressLabel = new JLabel(Language.DEFAULT.getString("my_external_address") + ":");
         externalAddressLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 3;
         wrapper.add(externalAddressLabel, constraints);
 
-        final JLabel portLabel = new JLabel("Mój port:");
+        final JLabel portLabel = new JLabel(Language.DEFAULT.getString("my_port") + ":");
         portLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 5;
         wrapper.add(portLabel, constraints);
 
-        final JLabel publicKeyLabel = new JLabel("Mój klucz publiczny:");
+        final JLabel publicKeyLabel = new JLabel(Language.DEFAULT.getString("my_public_key") + ":");
         publicKeyLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 6;
         wrapper.add(publicKeyLabel, constraints);
@@ -359,12 +360,12 @@ public class HomeWindow extends JFrame {
         wrapper.add(this.portValueLabel, constraints);
 
         this.publicKeyValueLabel = new JLabel("...");
-        this.publicKeyValueLabel.setToolTipText("Kliknij, aby zobaczyć cały klucz.");
+        this.publicKeyValueLabel.setToolTipText(Language.DEFAULT.getString("public_key_tooltip"));
         this.publicKeyValueLabel.setFont(App.NORMAL_FONT);
         constraints.gridy = 6;
         wrapper.add(this.publicKeyValueLabel, constraints);
 
-        final JTextArea localAddressArea = new JTextArea("Podaj ten adres osobom, które znajdują się w tej samej sieci lokalnej.");
+        final JTextArea localAddressArea = new JTextArea(Language.DEFAULT.getString("my_local_address_description"));
         localAddressArea.setFont(App.SMALL_FONT);
         localAddressArea.setOpaque(false);
         localAddressArea.setEditable(false);
@@ -374,7 +375,7 @@ public class HomeWindow extends JFrame {
         constraints.insets = new Insets(3, 0, 0, 0);
         wrapper.add(localAddressArea, constraints);
 
-        final JTextArea externalAddressArea = new JTextArea("Podaj ten adres osobom, które chcą połączyć się z Tobą przez internet. Aby się to udało, może być konieczne odpowiednie skonfigurowanie routera.");
+        final JTextArea externalAddressArea = new JTextArea(Language.DEFAULT.getString("my_external_address_description"));
         externalAddressArea.setFont(App.SMALL_FONT);
         externalAddressArea.setOpaque(false);
         externalAddressArea.setEditable(false);
@@ -383,7 +384,7 @@ public class HomeWindow extends JFrame {
         constraints.gridy = 4;
         wrapper.add(externalAddressArea, constraints);
 
-        final JTextArea publicKeyArea = new JTextArea("Każda osoba przyjmująca od Ciebie połączenie zobaczy ten ciąg. Dzięki niemu będzie mogła zweryfikować Twoją tożsamość.");
+        final JTextArea publicKeyArea = new JTextArea(Language.DEFAULT.getString("my_public_key_description"));
         publicKeyArea.setFont(App.SMALL_FONT);
         publicKeyArea.setOpaque(false);
         publicKeyArea.setEditable(false);
@@ -392,7 +393,7 @@ public class HomeWindow extends JFrame {
         constraints.gridy = 7;
         wrapper.add(publicKeyArea, constraints);
 
-        final RoundedButtonView deleteDataButtonView = new RoundedButtonView("Usuń dane");
+        final RoundedButtonView deleteDataButtonView = new RoundedButtonView(Language.DEFAULT.getString("delete_data"));
         deleteDataButtonView.setPreferredSize(new Dimension(120, 30));
         deleteDataButtonView.setBackground(App.RED_COLOR);
         constraints.gridx = 0;
@@ -408,7 +409,7 @@ public class HomeWindow extends JFrame {
         this.publicKeyValueLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                new PublicKeyDialog(owner, "Mój klucz publiczny", fullPublicKey);
+                new PublicKeyDialog(owner, Language.DEFAULT.getString("my_public_key"), fullPublicKey);
             }
         });
 
@@ -527,7 +528,7 @@ public class HomeWindow extends JFrame {
             this.messageInputView.getTextArea().setFont(App.NORMAL_ITALIC_FONT);
             this.messageInputView.getTextArea().setForeground(Color.GRAY);
             this.messageInputView.getTextArea().getCaret().setVisible(false);
-            this.messageInputView.getTextArea().setText("Użytkownik jest offline");
+            this.messageInputView.getTextArea().setText(Language.DEFAULT.getString("peer_offline"));
             this.imageButton.setEnabled(false);
         }
     }

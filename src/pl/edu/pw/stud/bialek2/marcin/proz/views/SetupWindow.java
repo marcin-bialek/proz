@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -21,7 +22,7 @@ import javax.swing.JTextPane;
 
 public class SetupWindow extends JFrame {
     private static final long serialVersionUID = 206072431562958302L;
-    
+
     private SetupWindowListener listener;
     private RoundedTextFieldView nickFieldView;
     private RoundedPasswordFieldView passwordFieldView;
@@ -62,7 +63,7 @@ public class SetupWindow extends JFrame {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.CENTER;
 
-        JTextArea info = new JTextArea("Zanim zaczniesz korzystać z chatu ustaw kilka rzeczy.");
+        JTextArea info = new JTextArea(Language.DEFAULT.getString("setup_info"));
         info.setForeground(Color.WHITE);
         info.setOpaque(false);
         info.setEditable(false);
@@ -74,7 +75,7 @@ public class SetupWindow extends JFrame {
         constraints.gridwidth = 2;
         this.add(info, constraints);
 
-        JLabel nickLabel = new JLabel("Nick:");
+        JLabel nickLabel = new JLabel(Language.DEFAULT.getString("nick") + ":");
         nickLabel.setForeground(Color.WHITE);
         constraints.weightx = 0.1;
         constraints.gridwidth = 1;
@@ -82,17 +83,17 @@ public class SetupWindow extends JFrame {
         constraints.insets = new Insets(15, 20, 0, 20);
         this.add(nickLabel, constraints);
 
-        JLabel portLabel = new JLabel("Hasło:");
+        JLabel portLabel = new JLabel(Language.DEFAULT.getString("password") + ":");
         portLabel.setForeground(Color.WHITE);
         constraints.gridy = 3;
         this.add(portLabel, constraints);
 
-        JLabel passwordLabel = new JLabel("Port:");
+        JLabel passwordLabel = new JLabel(Language.DEFAULT.getString("port") + ":");
         passwordLabel.setForeground(Color.WHITE);
         constraints.gridy = 5;
         this.add(passwordLabel, constraints);
 
-        JLabel databaseLabel = new JLabel("Baza danych:");
+        JLabel databaseLabel = new JLabel(Language.DEFAULT.getString("database") + ":");
         databaseLabel.setForeground(Color.WHITE);
         constraints.gridy = 7;
         this.add(databaseLabel, constraints);
@@ -120,7 +121,7 @@ public class SetupWindow extends JFrame {
         this.add(this.databaseFieldView, constraints);
 
         JTextPane nickPane = new JTextPane();
-        nickPane.setText("To Twój identyfikator, który będą widzieli Twoi znajomi. Musi składać się co najmniej z 6 znaków. Jego zmiana będzie możliwa jedynie poprzez usunięcie danych aplikacji i ponowną instalację.");
+        nickPane.setText(Language.DEFAULT.getString("nick_description"));
         nickPane.setEditable(false);
         nickPane.setForeground(Color.WHITE);
         nickPane.setOpaque(false);
@@ -130,7 +131,7 @@ public class SetupWindow extends JFrame {
         this.add(nickPane, constraints);
 
         JTextPane passwordPane = new JTextPane();
-        passwordPane.setText("Hasło chroni Twoje ustawienia i wiadomości przed niepowołanym dostępem. Trzeba będzie je wprowadzić przy każdym uruchomieniu aplikacji. Musi składać się co najmniej z 6 znaków. Pamiętaj, że hasła nie da się odzyskać.");
+        passwordPane.setText(Language.DEFAULT.getString("password_description"));
         passwordPane.setEditable(false);
         passwordPane.setForeground(Color.WHITE);
         passwordPane.setOpaque(false);
@@ -139,7 +140,7 @@ public class SetupWindow extends JFrame {
         this.add(passwordPane, constraints);
 
         JTextPane portPane = new JTextPane();
-        portPane.setText("Jest to punkt połączenia do wymiany informacji. Twoi znajomi będą musieli go podać (razem z adresem), aby się z Tobą połączyć. Możesz zostawić to ustawienie domyślne. Jeśli aplikacji wykryje, że podany port jest już używany, poprosi Cię o jego zmianę.");
+        portPane.setText(Language.DEFAULT.getString("port_description"));
         portPane.setEditable(false);
         portPane.setForeground(Color.WHITE);
         portPane.setOpaque(false);
@@ -148,7 +149,7 @@ public class SetupWindow extends JFrame {
         this.add(portPane, constraints);
 
         JTextPane databasePane = new JTextPane();
-        databasePane.setText("Nazwa pliku, w którym będą zapisywani Twoi znajomi i wiadomości. Możesz zostawić to ustawienie domyślne.");
+        databasePane.setText(Language.DEFAULT.getString("database_description"));
         databasePane.setEditable(false);
         databasePane.setForeground(Color.WHITE);
         databasePane.setOpaque(false);
@@ -157,7 +158,7 @@ public class SetupWindow extends JFrame {
         this.add(databasePane, constraints);
 
 
-        this.submitButtonView = new RoundedButtonView("Dalej");
+        this.submitButtonView = new RoundedButtonView(Language.DEFAULT.getString("next"));
         this.submitButtonView.setMinimumSize(new Dimension(270, 40));
         this.setSubmitButtonEnabled(false);
         constraints.gridx = 0;

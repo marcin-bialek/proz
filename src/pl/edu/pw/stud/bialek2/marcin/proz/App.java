@@ -118,8 +118,6 @@ public final class App implements UserServiceDelegate,
         this.p2pService.stopListening();
         this.databaseService.close();
         this.userService.saveUser();
-
-        System.out.println("exit");
         System.exit(0);
     }
 
@@ -129,8 +127,6 @@ public final class App implements UserServiceDelegate,
         final File databaseFile = new File(this.userService.getUser().getDBFilename());
         databaseFile.delete();
         this.userService.deleteUser();
-
-        System.out.println("delete and exit");
         System.exit(0);
     }
 
@@ -217,13 +213,13 @@ public final class App implements UserServiceDelegate,
 
     @Override
     public void securityServiceNoSuchAlgorithm() {
-        System.err.println("No such algorithm");
+        System.err.println("[Error] No such algorithm.");
         this.exit();
     }
 
     @Override
     public void databaseServiceSQLError() {
-        System.out.println("sql error");
+        System.out.println("[Error] SQL error.");
     }
 
     @Override
@@ -277,7 +273,6 @@ public final class App implements UserServiceDelegate,
     public void p2pServiceIncomingConnection(Peer peer) {
         this.invokeLater(() -> {
             final Peer p = this.peers.get(peer.getPublicKeyAsString());
-            // System.out.println("connection from: " + peer.getPublicKeyAsString());
 
             if(p != null) {
                 if(p.getSession().getState() != P2PSession.State.CONNECTED) {

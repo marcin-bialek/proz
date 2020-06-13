@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -20,7 +21,7 @@ import javax.swing.JPanel;
 
 public class PeerConnectingWindow extends JFrame {
     private static final long serialVersionUID = 8417781441111585541L;
-    
+
     private PeerConnectingWindowListener listener;
     private JLabel nickValueLabel;
     private JLabel addressValueLabel;
@@ -60,7 +61,7 @@ public class PeerConnectingWindow extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
         
-        final JLabel infoLabel = new JLabel("Czy chcesz zaakceptować połączenie?");
+        final JLabel infoLabel = new JLabel(Language.DEFAULT.getString("peer_connecting_info"));
         infoLabel.setFont(App.NORMAL_BOLD_FONT);
         infoLabel.setForeground(Color.WHITE);
         constraints.gridx = 0;
@@ -69,7 +70,7 @@ public class PeerConnectingWindow extends JFrame {
         constraints.insets = new Insets(20, 20, 0, 20);
         this.add(infoLabel, constraints);
 
-        final JLabel nickLabel = new JLabel("Nick:");
+        final JLabel nickLabel = new JLabel(Language.DEFAULT.getString("nick") + ":");
         nickLabel.setFont(App.NORMAL_FONT);
         nickLabel.setForeground(Color.WHITE);
         constraints.gridy = 1;
@@ -77,13 +78,13 @@ public class PeerConnectingWindow extends JFrame {
         constraints.weightx = 0.1;
         this.add(nickLabel, constraints);
 
-        final JLabel addressLabel = new JLabel("Adres:");
+        final JLabel addressLabel = new JLabel(Language.DEFAULT.getString("address") + ":");
         addressLabel.setFont(App.NORMAL_FONT);
         addressLabel.setForeground(Color.WHITE);
         constraints.gridy = 2;
         this.add(addressLabel, constraints);
 
-        final JLabel publicKeyLabel = new JLabel("Klucz publiczny:");
+        final JLabel publicKeyLabel = new JLabel(Language.DEFAULT.getString("public_key") + ":");
         publicKeyLabel.setFont(App.NORMAL_FONT);
         publicKeyLabel.setForeground(Color.WHITE);
         constraints.gridy = 3;
@@ -105,7 +106,7 @@ public class PeerConnectingWindow extends JFrame {
         this.add(this.addressValueLabel, constraints);
 
         this.publicKeyValueLabel = new JLabel();
-        publicKeyValueLabel.setToolTipText("Kliknij, aby zobaczyć cały klucz.");
+        publicKeyValueLabel.setToolTipText(Language.DEFAULT.getString("public_key_tooltip"));
         publicKeyValueLabel.setFont(App.NORMAL_FONT);
         publicKeyValueLabel.setForeground(Color.WHITE);
         constraints.gridy = 3;
@@ -120,7 +121,7 @@ public class PeerConnectingWindow extends JFrame {
         constraints.insets = new Insets(40, 20, 20, 20);
         this.add(buttonsPanel, constraints);
 
-        final RoundedButtonView acceptButtonView = new RoundedButtonView("Zaakceptuj");
+        final RoundedButtonView acceptButtonView = new RoundedButtonView(Language.DEFAULT.getString("accept"));
         acceptButtonView.setPreferredSize(new Dimension(120, 30));
         constraints.gridwidth = 1;
         constraints.gridx = 0;
@@ -130,7 +131,7 @@ public class PeerConnectingWindow extends JFrame {
         constraints.insets = new Insets(0, 0, 0, 0);
         buttonsPanel.add(acceptButtonView, constraints);
 
-        final RoundedButtonView rejectButtonView = new RoundedButtonView("Odrzuć");
+        final RoundedButtonView rejectButtonView = new RoundedButtonView(Language.DEFAULT.getString("reject"));
         rejectButtonView.setPreferredSize(new Dimension(120, 30));
         rejectButtonView.setBackground(App.RED_COLOR);
         constraints.gridx = 1;
@@ -141,7 +142,7 @@ public class PeerConnectingWindow extends JFrame {
         publicKeyValueLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                new PublicKeyDialog(owner, "Klucz publiczny " + nickValueLabel.getText(), fullPublicKey);
+                new PublicKeyDialog(owner, Language.DEFAULT.getString("public_key") + " " + nickValueLabel.getText(), fullPublicKey);
             }
         });
 

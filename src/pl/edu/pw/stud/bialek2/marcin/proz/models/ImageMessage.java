@@ -1,5 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.models;
 
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,7 +39,7 @@ public class ImageMessage extends Message {
 
     @Override
     public String getValueAsString() {
-        return "obrazek";
+        return Language.DEFAULT.getString("image");
     }
 
     @Override

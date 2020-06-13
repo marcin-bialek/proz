@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PasswordWindow;
 import pl.edu.pw.stud.bialek2.marcin.proz.views.PasswordWindowListener;
 
@@ -21,7 +22,7 @@ public class PasswordController implements PasswordWindowListener {
     public void setPasswordIncorrect() {
         this.view.setPasswordFieldBackgroundColor(App.LIGHT_RED_COLOR);
         this.view.setSubmitButtonEnabled(true);
-        this.view.setSubmitButtonText("Dalej");
+        this.view.setSubmitButtonText(Language.DEFAULT.getString("next"));
     }
 
     public void closeWindow() {
@@ -40,7 +41,7 @@ public class PasswordController implements PasswordWindowListener {
     public void passwordWindowDidSubmit(char[] password) {
         if(this.delegate != null) {
             this.view.setSubmitButtonEnabled(false);
-            this.view.setSubmitButtonText("Ładowanie...");
+            this.view.setSubmitButtonText(Language.DEFAULT.getString("loading") + "...");
             this.delegate.passwordControllerDidEnterPassword(this, password);
         }
     }

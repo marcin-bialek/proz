@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,7 +20,7 @@ import javax.swing.JLabel;
 
 public class PasswordWindow extends JFrame {
     private static final long serialVersionUID = -1741907328559266181L;
-    
+
     private PasswordWindowListener listener;
     private RoundedPasswordFieldView passwordFieldView;
     private RoundedButtonView submitButtonView;
@@ -73,7 +74,7 @@ public class PasswordWindow extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         constraints.fill = GridBagConstraints.BOTH;
 
-        JLabel passwordFieldLabel = new JLabel("Wprowadź hasło:");
+        JLabel passwordFieldLabel = new JLabel(Language.DEFAULT.getString("enter_password") + ":");
         passwordFieldLabel.setForeground(Color.WHITE);
         constraints.gridy = 0;
         constraints.weighty = 0.5;
@@ -85,7 +86,7 @@ public class PasswordWindow extends JFrame {
         constraints.insets = new Insets(10, 20, 20, 20);
         this.add(this.passwordFieldView, constraints);
 
-        this.submitButtonView = new RoundedButtonView("Dalej");
+        this.submitButtonView = new RoundedButtonView(Language.DEFAULT.getString("next"));
         constraints.fill = GridBagConstraints.VERTICAL;
         constraints.gridy = 2;
         constraints.weighty = 0.25;

@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Dimension;
 import java.awt.Color;
@@ -18,7 +19,7 @@ import javax.swing.JTextArea;
 
 public class AddPeerWindow extends JFrame {
     private static final long serialVersionUID = -6534937685796779127L;
-    
+
     private AddPeerWindowListener listener;
     private RoundedTextFieldView addressFieldView;
     private RoundedTextFieldView portFieldView;
@@ -48,7 +49,7 @@ public class AddPeerWindow extends JFrame {
         constraints.fill = GridBagConstraints.BOTH;
         constraints.anchor = GridBagConstraints.CENTER;
 
-        final JTextArea infoArea = new JTextArea("Podaj adres i port znajomego. Jeśli Twoje połączenie zostanie zaakceptowane, nowy znajomy pojawi się na pasku po lewej stronie.");
+        final JTextArea infoArea = new JTextArea(Language.DEFAULT.getString("add_peer_info"));
         infoArea.setForeground(Color.WHITE);
         infoArea.setOpaque(false);
         infoArea.setEditable(false);
@@ -59,7 +60,7 @@ public class AddPeerWindow extends JFrame {
         constraints.weighty = 0.5;
         this.add(infoArea, constraints);
 
-        final JLabel addressLabel = new JLabel("Adres:");
+        final JLabel addressLabel = new JLabel(Language.DEFAULT.getString("address") + ":");
         addressLabel.setForeground(Color.WHITE);
         constraints.gridy = 1;
         constraints.gridwidth = 1;
@@ -68,7 +69,7 @@ public class AddPeerWindow extends JFrame {
         constraints.insets = new Insets(20, 20, 0, 20);
         this.add(addressLabel, constraints);
 
-        final JLabel portLabel = new JLabel("Port:");
+        final JLabel portLabel = new JLabel(Language.DEFAULT.getString("port") + ":");
         portLabel.setForeground(Color.WHITE);
         constraints.gridy = 2;
         this.add(portLabel, constraints);
@@ -83,7 +84,7 @@ public class AddPeerWindow extends JFrame {
         constraints.gridy = 2;
         this.add(this.portFieldView, constraints);
 
-        this.addButtonView = new RoundedButtonView("Dodaj");
+        this.addButtonView = new RoundedButtonView(Language.DEFAULT.getString("add"));
         this.addButtonView.disableButton();
         constraints.gridx = 0;
         constraints.gridy = 3;

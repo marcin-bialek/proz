@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +16,7 @@ import javax.swing.JTextArea;
 
 public class DeletePeerWindow extends JDialog {
     private static final long serialVersionUID = -827166748800312446L;
-    
+
     private DeletePeerWindowListener listener;
     private String peerNick;
 
@@ -41,7 +42,7 @@ public class DeletePeerWindow extends JDialog {
         constraints.weightx = 1;
         constraints.insets = new Insets(20, 20, 20, 20);
 
-        final JTextArea infoArea = new JTextArea("Czy na pewno chcesz usunąć znajomego " + this.peerNick + " wraz z wiadomościami?");
+        final JTextArea infoArea = new JTextArea(String.format(Language.DEFAULT.getString("delete_peer_info"), this.peerNick));
         infoArea.setForeground(Color.WHITE);
         infoArea.setOpaque(false);
         infoArea.setEditable(false);
@@ -55,14 +56,14 @@ public class DeletePeerWindow extends JDialog {
         constraints.anchor = GridBagConstraints.CENTER;
         this.add(infoArea, constraints);
 
-        final RoundedButtonView cancelButtonView = new RoundedButtonView("Nie");
+        final RoundedButtonView cancelButtonView = new RoundedButtonView(Language.DEFAULT.getString("no"));
         constraints.gridy = 1;
         constraints.gridwidth = 1;
         constraints.weighty = 0.3;
         constraints.fill = GridBagConstraints.VERTICAL;
         this.add(cancelButtonView, constraints);
 
-        final RoundedButtonView confirmButtonView = new RoundedButtonView("Tak");
+        final RoundedButtonView confirmButtonView = new RoundedButtonView(Language.DEFAULT.getString("yes"));
         confirmButtonView.setBackground(App.RED_COLOR);
         constraints.gridx = 1;
         this.add(confirmButtonView, constraints);

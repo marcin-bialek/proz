@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.P2PService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.SecurityService;
 import pl.edu.pw.stud.bialek2.marcin.proz.services.UserService;
@@ -47,7 +48,7 @@ public class SetupController implements SetupWindowListener {
     public void setupWindowDidSubmit(String nick, char[] password, String port, String dbFilename) {
         if(this.delegate != null && this.areFieldsValid()) {
             this.view.setSubmitButtonEnabled(false);
-            this.view.setSubmitButtonText("Ładowanie...");
+            this.view.setSubmitButtonText(Language.DEFAULT.getString("loading") + "...");
             this.delegate.setupControllerDidSetup(this, nick.trim(), password, Integer.parseInt(port.trim()), dbFilename.trim());
         }
     }

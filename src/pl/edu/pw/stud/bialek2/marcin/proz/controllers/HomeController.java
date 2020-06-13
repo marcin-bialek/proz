@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.controllers;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.ImageMessage;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.Message;
 import pl.edu.pw.stud.bialek2.marcin.proz.models.P2PSession;
@@ -243,7 +244,7 @@ public class HomeController implements HomeWindowListener {
 	@Override
 	public void homeWindowDidClickPeerKeyButton() {
 		if(this.activePeer != null) {
-			new PublicKeyDialog(this.view, "Klucz publiczny " + this.activePeer.getNick(), this.activePeer.getPublicKeyAsString());
+			new PublicKeyDialog(this.view, Language.DEFAULT.getString("public_key") + " " + this.activePeer.getNick(), this.activePeer.getPublicKeyAsString());
 		}
 	}
 

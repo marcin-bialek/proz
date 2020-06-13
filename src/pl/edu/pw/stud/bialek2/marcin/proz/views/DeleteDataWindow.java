@@ -1,6 +1,7 @@
 package pl.edu.pw.stud.bialek2.marcin.proz.views;
 
 import pl.edu.pw.stud.bialek2.marcin.proz.App;
+import pl.edu.pw.stud.bialek2.marcin.proz.Language;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +16,7 @@ import javax.swing.JTextArea;
 
 public class DeleteDataWindow extends JFrame {
     private static final long serialVersionUID = 119063506472880961L;
-    
+
     private DeleteDataWindowListener listener;
 
     public DeleteDataWindow() {
@@ -39,7 +40,7 @@ public class DeleteDataWindow extends JFrame {
         constraints.weightx = 1;
         constraints.insets = new Insets(20, 20, 20, 20);
 
-        final JTextArea infoArea = new JTextArea("Czy na pewno chcesz usunąć wszystkie dane wraz z wiadomościami?");
+        final JTextArea infoArea = new JTextArea(Language.DEFAULT.getString("delete_data_info"));
         infoArea.setForeground(Color.WHITE);
         infoArea.setOpaque(false);
         infoArea.setEditable(false);
@@ -53,14 +54,14 @@ public class DeleteDataWindow extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         this.add(infoArea, constraints);
 
-        final RoundedButtonView cancelButtonView = new RoundedButtonView("Nie");
+        final RoundedButtonView cancelButtonView = new RoundedButtonView(Language.DEFAULT.getString("no"));
         constraints.gridy = 1;
         constraints.gridwidth = 1;
         constraints.weighty = 0.3;
         constraints.fill = GridBagConstraints.VERTICAL;
         this.add(cancelButtonView, constraints);
 
-        final RoundedButtonView confirmButtonView = new RoundedButtonView("Tak");
+        final RoundedButtonView confirmButtonView = new RoundedButtonView(Language.DEFAULT.getString("yes"));
         confirmButtonView.setBackground(App.RED_COLOR);
         constraints.gridx = 1;
         this.add(confirmButtonView, constraints);
